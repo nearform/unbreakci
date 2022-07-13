@@ -11,7 +11,7 @@
 ## Project Board
 https://github.com/orgs/nearform/projects/16/views/1
 
-Repository based on the Bench Template:
+## Repository based on the Bench Template
 A feature-packed template to start a new repository on the bench, including:
 
 - code linting with [ESlint](https://eslint.org) and [prettier](https://prettier.io)
