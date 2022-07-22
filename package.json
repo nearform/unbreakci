@@ -1,10 +1,12 @@
 {
-  "name": "bench-template",
+  "name": "unbreakci",
   "version": "1.0.0",
-  "description": "Template to start a new repository on the bench",
-  "main": "index.js",
+  "description": "A GitHub app to automatically add broken dependabot bumps to the project board, therefore allowing us to unbreak the CI.",
+  "main": "server.js",
   "type": "module",
   "scripts": {
+    "start": "node server",
+    "dev": "nodemon server",
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 0",
     "prepare": "husky install"
@@ -28,9 +30,13 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
+    "nodemon": "^2.0.19",
     "prettier": "^2.7.1"
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --cache --fix"
+  },
+  "dependencies": {
+    "fastify": "^4.3.0"
   }
 }
