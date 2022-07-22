@@ -1,0 +1,7 @@
+### ADD ITEM
+POST http://localhost:5000/checks HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "New Item"
+}

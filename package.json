@@ -2,8 +2,6 @@
   "name": "unbreakci",
   "version": "1.0.0",
   "description": "A GitHub app to automatically add broken dependabot bumps to the project board, therefore allowing us to unbreak the CI.",
-  "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server",
     "dev": "nodemon server",
@@ -13,15 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nearform/bench-template.git"
+    "url": "git+https://github.com/nearform/unbreakci.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Gui Zordan <gui.zordan@nearform.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nearform/bench-template/issues"
+    "url": "https://github.com/nearform/unbreakci/issues"
   },
-  "homepage": "https://github.com/nearform/bench-template#readme",
+  "homepage": "https://github.com/nearform/unbreakci#readme",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "fastify": "^4.3.0"
+  },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
     "@commitlint/config-conventional": "^17.0.3",
@@ -35,8 +37,5 @@
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --cache --fix"
-  },
-  "dependencies": {
-    "fastify": "^4.3.0"
   }
 }

@@ -1,14 +1,18 @@
-import Fastify from 'fastify'
+const Fastify = require('fastify')
+const dotenv = require('dotenv')
+const { checkRoutes } = require('./routes/checks')
+
+const fastify = Fastify({ logger: true })
+
+dotenv.config()
+
+const { PORT } = process.env
+
+fastify.register(checkRoutes)
 
 const start = async function () {
-  const fastify = Fastify()
-
-  fastify.get('/', async () => {
-    return { hello: 'world' }
-  })
-
   try {
-    await fastify.listen({ port: 3000 })
+    await fastify.listen({ port: PORT })
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
