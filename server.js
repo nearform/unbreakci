@@ -1,5 +1,4 @@
-const dotenv = require('dotenv')
-dotenv.config()
+require('dotenv').config()
 
 const Fastify = require('fastify')
 const { checkRoutes } = require('./routes/checks')
