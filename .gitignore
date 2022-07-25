@@ -11,3 +11,6 @@ node_modules
 
 # ENV
 .env
+
+# http test
+test.http
