@@ -1,10 +1,10 @@
-const Fastify = require('fastify')
 const dotenv = require('dotenv')
+dotenv.config()
+
+const Fastify = require('fastify')
 const { checkRoutes } = require('./routes/checks')
 
 const fastify = Fastify({ logger: true })
-
-dotenv.config()
 
 const { PORT } = process.env
 
