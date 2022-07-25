@@ -1,5 +1,7 @@
 node_modules
 .eslintcache
+.env
+test.http
 
 # JetBrains IDEs
 .idea
@@ -8,9 +10,3 @@ node_modules
 
 # OS X
 .DS_Store
-
-# ENV
-.env
-
-# http test
-test.http

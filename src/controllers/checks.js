@@ -3,4 +3,4 @@ function addCheck(req, reply) {
   reply.code(200).send({})
 }
 
-module.exports = { addCheck }
+export { addCheck }

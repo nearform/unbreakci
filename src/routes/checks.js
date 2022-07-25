@@ -1,4 +1,4 @@
-const { addCheck } = require('../controllers/checks')
+import { addCheck } from '../controllers/checks.js'
 
 // Item schema
 const Check = {
@@ -25,11 +25,9 @@ const postCheckOpts = {
   handler: addCheck
 }
 
-function checkRoutes(fastify, options, done) {
+export default function checkRoutes(fastify, options, done) {
   // Add item
   fastify.post('/checks', postCheckOpts)
 
   done()
 }
-
-module.exports = { checkRoutes }
