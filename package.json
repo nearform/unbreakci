@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.mjs",
     "start": "babel-node src/index.js",
     "lint": "eslint .",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "prepare": "husky install"
   },
   "repository": {
