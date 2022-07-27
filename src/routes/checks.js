@@ -1,25 +1,15 @@
 import { addCheck } from '../controllers/checks.js'
 
-// Item schema
-const Check = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    name: { type: 'string' }
-  }
-}
-
 const postCheckOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['name'],
+      required: ['payload'],
       properties: {
-        name: { type: 'string' }
+        payload: {
+          type: 'string'
+        }
       }
-    },
-    response: {
-      201: Check
     }
   },
   handler: addCheck

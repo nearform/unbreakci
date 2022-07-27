@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import checkRoutes from './routes/checks.js'
+import formbody from '@fastify/formbody'
 
 export default function buildServer(config) {
   const fastify = Fastify({
@@ -9,6 +10,7 @@ export default function buildServer(config) {
     }
   })
 
+  fastify.register(formbody)
   fastify.register(checkRoutes)
 
   return fastify
