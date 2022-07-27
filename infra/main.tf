@@ -18,7 +18,7 @@ module "cloudrun" {
   app_name  = var.app_name
   min_scale = var.min_scale
   max_scale = var.max_scale
-  ports     = [{
+  ports = [{
     name           = "http"
     container_port = var.ports
   }]
@@ -47,11 +47,15 @@ module "secret" {
 }
 
 module "sqldb" {
-  source           = "github.com/nearform/terraform-google-sql-db//modules/postgresql?ref=v8.0.1"
-  name             = "${var.app_name}-${var.env}-db"
-  region           = var.region
-  project_id       = var.project
-  zone             = "${var.region}-a"
-  database_version = var.db_version
-  user_name        = var.db_username
+  source                  = "./modules/sqldb"
+  name                    = "${var.app_name}-${var.env}-db"
+  region                  = var.region
+  zone                    = var.zone
+  db_username             = var.db_username
+  db_password             = module.secret.secret_random[0]
+  db_tier                 = var.db_tier
+  db_version              = var.db_version
+  compute_private_network = module.network.vpc_network_id
+  deletion_protection     = var.deletion_protection
+  depends_on              = [module.network]
 }

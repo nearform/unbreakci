@@ -19,12 +19,15 @@ variable "private_service_ips_range" {}
 
 variable "private_service_ips_range_len" {}
 
-variable "db_username" {}
+variable "ports" {}
+
+variable "zone" {}
 
 variable "db_version" {}
 
 variable "db_tier" {}
 
-variable "ports" {}
+variable "db_username" {}
 
-variable "zone" {}
+variable "deletion_protection" {}
+
