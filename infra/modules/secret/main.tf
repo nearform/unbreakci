@@ -1,6 +1,6 @@
 
 #Generated secrets
-resource "google_secret_manager_secret" "gen" {
+resource "google_secret_manager_secret" "secret" {
   count     = length(var.secrets)
   secret_id = var.secrets[count.index].id
   replication {
@@ -8,13 +8,13 @@ resource "google_secret_manager_secret" "gen" {
   }
 }
 
-resource "google_secret_manager_secret_version" "gen" {
+resource "google_secret_manager_secret_version" "secret" {
   count       = length(var.secrets)
-  secret      = google_secret_manager_secret.gen[count.index].id
-  secret_data = random_password.gen[count.index].result
+  secret      = google_secret_manager_secret.secret[count.index].id
+  secret_data = random_password.secret[count.index].result
 }
 
-resource "random_password" "gen" {
+resource "random_password" "secret" {
   count   = length(var.secrets)
   length  = var.secrets[count.index].size
   special = false
