@@ -1,37 +1,31 @@
 import { Octokit } from 'octokit'
 import { createAppAuth } from '@octokit/auth-app'
+import config from '../../config.js'
 
 export default async function useOctokit() {
-  const { APP_KEY: privateKey, APP_ID: appId } = process.env
+  const auth = createAppAuth({
+    appId: config.APP_ID,
+    privateKey: config.APP_KEY
+  })
 
-  try {
-    const auth = createAppAuth({
-      appId,
-      privateKey
-    })
+  const appAuthentication = await auth({ type: 'app' })
 
-    const appAuthentication = await auth({ type: 'app' })
+  const octokit = new Octokit({
+    auth: appAuthentication.token
+  })
 
-    const octokit = new Octokit({
-      auth: appAuthentication.token
-    })
+  const { data: installations } = await octokit.request(
+    'GET /app/installations'
+  )
 
-    const installationsResponse = await octokit.request(
-      'GET /app/installations'
-    )
+  const { id: lastInstallationId } = installations[installations.length - 1]
 
-    const installations = installationsResponse.data
-    const { id: lastInstallationId } = installations[installations.length - 1]
-
-    return new Octokit({
-      authStrategy: createAppAuth,
-      auth: {
-        appId,
-        privateKey,
-        installationId: lastInstallationId
-      }
-    })
-  } catch (error) {
-    throw new Error("couldn't use Octokit", error)
-  }
+  return new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+      appId: config.APP_ID,
+      privateKey: config.APP_KEY,
+      installationId: lastInstallationId
+    }
+  })
 }

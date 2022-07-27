@@ -14,10 +14,10 @@ async function addCheck(req, reply) {
   const duplicatedIssue = issues.some(issue => issue.title === title)
 
   if (!duplicatedIssue) {
-    reply.code(200).send(issues[0])
+    return reply.send(issues[0])
   }
 
-  reply.code(200).send({})
+  return {}
 }
 
 export { addCheck }

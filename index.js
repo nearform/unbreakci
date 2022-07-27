@@ -1,19 +1,13 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import buildServer from './src/server.js'
+import config from './config.js'
 
-import Fastify from 'fastify'
-import checkRoutes from './src/routes/checks.js'
-
-const fastify = Fastify({ logger: true })
-
-fastify.register(checkRoutes)
+const server = buildServer(config)
 
 const start = async function () {
   try {
-    const port = process.env.PORT || 8080
-    await fastify.listen({ port, host: '0.0.0.0' })
+    await server.listen({ port: config.PORT, host: '0.0.0.0' })
   } catch (err) {
-    fastify.log.error(err)
+    server.log.error(err)
     process.exit(1)
   }
 }
