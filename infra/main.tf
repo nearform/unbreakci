@@ -9,7 +9,6 @@ module "network" {
   private_service_ips_range_len = var.private_service_ips_range_len
 }
 
-
 module "cloudrun" {
   source    = "./modules/cloud_run"
   project   = var.project
@@ -58,4 +57,12 @@ module "sqldb" {
   compute_private_network = module.network.vpc_network_id
   deletion_protection     = var.deletion_protection
   depends_on              = [module.network]
+}
+
+
+module "gcr" {
+  source = "./modules/gcr"
+  name   = "${var.app_name}-${var.env}"
+  region = var.region
+
 }
