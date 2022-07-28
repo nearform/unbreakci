@@ -10,13 +10,15 @@ module "network" {
 }
 
 module "cloudrun" {
-  source    = "./modules/cloud_run"
-  project   = var.project
-  env       = var.env
-  region    = var.region
-  app_name  = var.app_name
-  min_scale = var.min_scale
-  max_scale = var.max_scale
+  source             = "./modules/cloud_run"
+  project            = var.project
+  env                = var.env
+  region             = var.region
+  app_name           = var.app_name
+  min_scale          = var.min_scale
+  max_scale          = var.max_scale
+  vpc_connector_name = module.network.vpc_connector_name
+  public_access      = var.public_access
   ports = [{
     name           = "h2c"
     container_port = var.ports
@@ -31,7 +33,7 @@ module "cloudrun" {
     key       = "1"
   }]
 
-  depends_on = [module.network, module.sqldb]
+  depends_on = [module.network, module.sqldb, module.gcr]
 }
 
 module "secret" {

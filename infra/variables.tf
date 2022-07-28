@@ -31,3 +31,4 @@ variable "db_username" {}
 
 variable "deletion_protection" {}
 
+variable "public_access" {}
