@@ -18,7 +18,7 @@ module "cloudrun" {
   min_scale = var.min_scale
   max_scale = var.max_scale
   ports = [{
-    name           = "http"
+    name           = "h2c"
     container_port = var.ports
   }]
   env_vars = [{
@@ -47,7 +47,7 @@ module "secret" {
 
 module "sqldb" {
   source                  = "./modules/sqldb"
-  name                    = "${var.app_name}-${var.env}-db"
+  name                    = "${var.app_name}-${var.env}-db-01"
   region                  = var.region
   zone                    = var.zone
   db_username             = var.db_username
@@ -56,13 +56,13 @@ module "sqldb" {
   db_version              = var.db_version
   compute_private_network = module.network.vpc_network_id
   deletion_protection     = var.deletion_protection
-  depends_on              = [module.network]
+  depends_on              = [module.network, module.secret]
 }
 
 
 module "gcr" {
-  source = "./modules/gcr"
-  name   = "${var.app_name}-${var.env}"
-  region = var.region
+  source   = "./modules/gcr"
+  project  = var.project
+  location = var.location
 
 }

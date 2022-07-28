@@ -1,2 +1,2 @@
-variable "name" {}
-variable "region" {}
+variable "project" {}
+variable "location" {}

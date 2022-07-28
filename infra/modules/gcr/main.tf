@@ -1,4 +1,4 @@
 resource "google_container_registry" "registry" {
-  project  = var.name
-  location = var.region
+  project  = var.project
+  location = var.location
 }
