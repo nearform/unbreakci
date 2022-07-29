@@ -3,7 +3,7 @@ data "google_project" "project" {
 
 resource "google_cloud_run_service" "this" {
 
-  name     = var.project
+  name     = "${var.project}-${var.env}"
   location = var.region
 
   template {

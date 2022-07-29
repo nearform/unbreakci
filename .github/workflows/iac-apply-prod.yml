@@ -24,14 +24,14 @@ jobs:
         id: fmt
         run: terraform fmt -recursive -check -diff
 
+      - name: GCP Authentication
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_PROVIDER_NAME }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+      
       - name: Initialize project
         run: terraform init -backend-config=env/prod/backend.hcl  -var-file=env/prod/prod.tfvars -reconfigure
-
-      - name: GCP Authentication
-        uses: google-github-actions/auth@v0.8.0
-        with:
-          project_id: ${{ secrets.gcp_project_id }}
-          credentials_json: ${{ secrets.gcp_credentials }}
 
       - name: Terraform Plan - PROD
         run: terraform plan -var-file=env/prod/prod.tfvars -out=tfplan

@@ -14,5 +14,5 @@ db_tier                       = "db-f1-micro"
 min_scale                     = 1
 max_scale                     = 5
 ports                         = 8080
-deletion_protection           = "false"
+deletion_protection           = "true"
 public_access                 = "true"
