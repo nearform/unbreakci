@@ -2,21 +2,32 @@ import { Octokit } from 'octokit'
 import { createAppAuth } from '@octokit/auth-app'
 import config from '../../config.js'
 
-export default async function useOctokit() {
-  const auth = createAppAuth({
-    appId: config.APP_ID,
-    privateKey: config.APP_KEY
-  })
+const appAuth = createAppAuth({
+  appId: config.APP_ID,
+  privateKey: config.APP_KEY
+})
 
-  const appAuthentication = await auth({ type: 'app' })
+async function getAppAuthentication() {
+  return await appAuth({ type: 'app' })
+}
+
+async function getAppInstallations() {
+  const { token } = await getAppAuthentication()
 
   const octokit = new Octokit({
-    auth: appAuthentication.token
+    auth: token
   })
 
   const { data: installations } = await octokit.request(
     'GET /app/installations'
   )
+
+  return installations
+}
+
+async function getAuthenticatedOctokit() {
+  console.log('setting octokit up...')
+  const installations = await getAppInstallations()
 
   const { id: lastInstallationId } = installations[installations.length - 1]
 
@@ -28,4 +39,11 @@ export default async function useOctokit() {
       installationId: lastInstallationId
     }
   })
+}
+
+export {
+  appAuth,
+  getAppAuthentication,
+  getAppInstallations,
+  getAuthenticatedOctokit
 }

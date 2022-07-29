@@ -1,11 +1,22 @@
 import Fastify from 'fastify'
 import checkRoutes from './routes/checks.js'
-import formbody from '@fastify/formbody'
+import config from '../config.js'
+import { getAuthenticatedOctokit } from './utils/octokit.js'
 
-export default function buildServer() {
-  const fastify = Fastify()
+export default async function buildServer() {
+  const fastify = Fastify({
+    logger: {
+      level: config.LOG_LEVEL
+    }
+  })
 
-  fastify.register(formbody)
+  const octokit = await getAuthenticatedOctokit()
+
+  fastify.addHook('preHandler', (req, res, next) => {
+    req.octokit = octokit
+    next()
+  })
+
   fastify.register(checkRoutes)
 
   return fastify

@@ -1,15 +1,13 @@
 import buildServer from './src/server.js'
 import config from './config.js'
 
-const server = buildServer(config)
-
-const start = async function () {
+async function start(fastify) {
   try {
-    await server.listen({ port: config.PORT, host: '0.0.0.0' })
+    await fastify.listen({ port: config.PORT, host: '0.0.0.0' })
   } catch (err) {
-    server.log.error(err)
+    fastify.log.error(err)
     process.exit(1)
   }
 }
 
-start()
+buildServer().then(start)
