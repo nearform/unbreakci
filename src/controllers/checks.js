@@ -2,24 +2,26 @@ async function addCheck(req) {
   const { body, octokit } = req
 
   const {
-    sender: { login },
-    workflow_run: { status, conclusion }
+    sender: { login: senderLogin },
+    check_suite: { status, conclusion },
+    repository: {
+      name: repositoryName,
+      owner: { login: ownerLogin }
+    }
   } = body
 
   if (
-    login === 'guizordan' &&
+    senderLogin === 'guizordan' &&
     status === 'completed' &&
     conclusion === 'failure'
   ) {
     console.log(conclusion)
   }
 
-  const issuesResponse = await octokit.rest.issues.listForRepo({
-    owner: 'nearform',
-    repo: 'test-dependabot'
+  const { data: issues } = await octokit.rest.issues.listForRepo({
+    owner: ownerLogin,
+    repo: repositoryName
   })
-
-  const issues = issuesResponse.data
 
   // const duplicatedIssue = issues.some(issue => issue.title === title)
   // if (!duplicatedIssue) {

@@ -11,32 +11,32 @@ async function getAppAuthentication() {
   return await appAuth({ type: 'app' })
 }
 
-async function getAppInstallations() {
+async function getAppInstallationIdForOrganization() {
   const { token } = await getAppAuthentication()
 
   const octokit = new Octokit({
     auth: token
   })
 
-  const { data: installations } = await octokit.request(
-    'GET /app/installations'
-  )
+  const {
+    data: { id }
+  } = await octokit.rest.apps.getOrgInstallation({
+    org: config.ORG
+  })
 
-  return installations
+  return id
 }
 
-async function getAuthenticatedOctokit() {
+async function getInstallationAuthenticatedOctokit() {
   console.log('setting octokit up...')
-  const installations = await getAppInstallations()
-
-  const { id: lastInstallationId } = installations[installations.length - 1]
+  const installationId = await getAppInstallationIdForOrganization()
 
   return new Octokit({
     authStrategy: createAppAuth,
     auth: {
       appId: config.APP_ID,
       privateKey: config.APP_KEY,
-      installationId: lastInstallationId
+      installationId
     }
   })
 }
@@ -44,6 +44,6 @@ async function getAuthenticatedOctokit() {
 export {
   appAuth,
   getAppAuthentication,
-  getAppInstallations,
-  getAuthenticatedOctokit
+  getAppInstallationIdForOrganization,
+  getInstallationAuthenticatedOctokit
 }

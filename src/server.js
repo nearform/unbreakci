@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import checkRoutes from './routes/checks.js'
 import config from '../config.js'
-import { getAuthenticatedOctokit } from './utils/octokit.js'
+import { getInstallationAuthenticatedOctokit } from './utils/octokit.js'
 
 export default async function buildServer() {
   const fastify = Fastify({
@@ -10,7 +10,7 @@ export default async function buildServer() {
     }
   })
 
-  const octokit = await getAuthenticatedOctokit()
+  const octokit = await getInstallationAuthenticatedOctokit()
 
   fastify.addHook('preHandler', (req, res, next) => {
     req.octokit = octokit

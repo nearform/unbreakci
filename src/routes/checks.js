@@ -16,7 +16,6 @@ import { addCheck } from '../controllers/checks.js'
 // }
 
 export default function checkRoutes(fastify, options, done) {
-  // Add item
   fastify.post('/checks', { handler: addCheck })
 
   done()
