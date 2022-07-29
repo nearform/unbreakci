@@ -1,0 +1,44 @@
+name: Apply Infrastructure - DEV
+
+on:
+  push:
+   branches:
+    - master
+  pull_request:
+    paths:
+      - 'infra/**'
+
+jobs:
+  apply-dev-infra:
+    runs-on: ubuntu-latest  
+    steps:
+      - name: Applying iac on DEV
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+     
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+      
+      - name: Terraform Format - DEV Environment
+        id: fmt
+        working-directory: ./infra/
+        run: terraform fmt -recursive -check -diff
+
+      - name: Initialize project
+        run: terraform init -backend-config=env/dev/backend.hcl  -var-file=env/dev/dev.tfvars -reconfigure
+
+      - name: GCP Authentication
+        uses: google-github-actions/auth@v0.8.0
+        with:
+          project_id: ${{ secrets.gcp_project_id }}
+          credentials_json: ${{ secrets.gcp_credentials }}
+
+      - name: Terraform Plan - DEV
+        run: terraform plan -var-file=env/dev/dev.tfvars -out=tfplan
+
+      - name: Apply Infra - DEV
+        id: apply_infra
+        run: terraform apply -var-file=env/dev/dev.tfvars -auto-approve tfplan
