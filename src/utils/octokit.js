@@ -1,5 +1,6 @@
 import { Octokit } from 'octokit'
 import { createAppAuth } from '@octokit/auth-app'
+import { request } from '@octokit/request'
 import config from '../../config.js'
 
 const appAuth = createAppAuth({
@@ -7,20 +8,16 @@ const appAuth = createAppAuth({
   privateKey: config.APP_KEY
 })
 
-async function getAppAuthentication() {
-  return await appAuth({ type: 'app' })
-}
+const requestWithAuth = request.defaults({
+  request: {
+    hook: appAuth.hook
+  }
+})
 
 async function getAppInstallationIdForOrganization() {
-  const { token } = await getAppAuthentication()
-
-  const octokit = new Octokit({
-    auth: token
-  })
-
   const {
     data: { id }
-  } = await octokit.rest.apps.getOrgInstallation({
+  } = await requestWithAuth('GET /orgs/{org}/installation', {
     org: config.ORG
   })
 
@@ -42,8 +39,6 @@ async function getInstallationAuthenticatedOctokit() {
 }
 
 export {
-  appAuth,
-  getAppAuthentication,
   getAppInstallationIdForOrganization,
   getInstallationAuthenticatedOctokit
 }
