@@ -34,11 +34,14 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
       
       - name: Initialize project
+        working-directory: ./infra/
         run: terraform init -backend-config=env/prod/backend.hcl  -var-file=env/prod/prod.tfvars -reconfigure
 
       - name: Terraform Plan - PROD
+        working-directory: ./infra/
         run: terraform plan -var-file=env/prod/prod.tfvars -out=tfplan
 
       - name: Apply Infra - PROD
+        working-directory: ./infra/
         id: apply_infra
         run: terraform plan -var-file=env/prod/prod.tfvars -auto-approve tfplan
