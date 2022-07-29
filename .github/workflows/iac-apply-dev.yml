@@ -9,7 +9,10 @@ on:
 
 jobs:
   apply-dev-infra:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read 
     steps:
       - name: Applying iac on DEV
         uses: actions/checkout@v3

@@ -8,7 +8,10 @@ on:
 
 jobs:  
   apply-prod-infra:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Applying iac on ${{ inputs.environment }} ${{ inputs.region }} [${{ env.working_dir }}]
         uses: actions/checkout@v3
