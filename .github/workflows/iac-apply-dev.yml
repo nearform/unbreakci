@@ -38,7 +38,7 @@ jobs:
 
       - name: Initialize the Token
         working-directory: ./infra/
-        run: cp /home/runner/work/unbreakci/unbreakci/gha-creds-*.json ./infra/key.json
+        run: echo -n /home/runner/work/unbreakci/unbreakci/gha-creds-*.json > ./infra/key.json
 
       - name: Initialize project
         working-directory: ./infra/
