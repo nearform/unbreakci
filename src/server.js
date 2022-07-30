@@ -11,11 +11,7 @@ export default async function buildServer() {
   })
 
   const octokit = await getInstallationAuthenticatedOctokit()
-
-  fastify.addHook('preHandler', (req, res, next) => {
-    req.octokit = octokit
-    next()
-  })
+  fastify.decorate('octokit', octokit)
 
   fastify.register(checkRoutes)
 
