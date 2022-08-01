@@ -27,6 +27,7 @@ jobs:
         steps:
 
         - name: GCP Authentication
+          id: auth
           uses: 'google-github-actions/auth@v0'
           with:
             token_format: 'access_token'
