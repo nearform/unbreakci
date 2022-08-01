@@ -18,6 +18,9 @@ on:
 jobs:
     deploy:
         name: Setup Gcloud Account
+        permissions:
+          id-token: write
+          contents: read 
         runs-on: ubuntu-latest
         env:
           IMAGE_NAME: gcr.io/${{ secrets.project_id }}/unbreakci-${{ inputs.env }}:${{ github.sha }}
