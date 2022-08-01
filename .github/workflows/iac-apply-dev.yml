@@ -35,7 +35,7 @@ jobs:
         with:
           token_format: 'access_token'
           workload_identity_provider: ${{ secrets.GCP_PROVIDER_NAME }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          service_account: ${{ secrets.GCP_SA }}
 
       - name: Initialize project
         working-directory: ./infra/
