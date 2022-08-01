@@ -13,8 +13,6 @@ on:
         required: true
       gcp_sa:
         required: true
-      
-
 jobs:
     deploy:
         name: Setup Gcloud Account
@@ -24,9 +22,13 @@ jobs:
         runs-on: ubuntu-latest
         env:
           IMAGE_NAME: gcr.io/${{ secrets.project_id }}/unbreakci-${{ inputs.env }}:${{ github.sha }}
-          REGION: us-central1
+          gcp_service_region: us-central1
 
         steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+          with:
+            ref: ${{ github.head_ref }}
 
         - name: GCP Authentication
           id: auth
@@ -43,16 +45,18 @@ jobs:
             username: oauth2accesstoken
             password: ${{ steps.auth.outputs.access_token }}
 
-        - name: Checkout repository
-          uses: actions/checkout@v2
-
         - name: Build Docker image
           run: docker build . -t $IMAGE_NAME
 
         - name: Push Docker image
           run: docker push $IMAGE_NAME
 
-        - name: Deploy New App version
-          run: gcloud run deploy unbreakci-${{ inputs.env }}  --image $IMAGE_NAME  --platform managed --project=${{ secrets.project_id }} --allow-unauthenticated --region $REGION
+        - name: Deploy Docker image
+          uses: 'google-github-actions/deploy-cloudrun@v0'
+          with:
+            service: 'unbreakci-${{ inputs.env }}'
+            region: ${{ env.gcp_service_region }}
+            image: ${{ env.IMAGE_NAME }}
+            project_id: ${{ env.project_id }}
             
 
