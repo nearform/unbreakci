@@ -13,19 +13,21 @@ const requestWithAppAuth = request.defaults({
   }
 })
 
-async function getOrganizationInstallationId({ org }) {
+async function getInstallationId({ owner, repo }) {
   const {
     data: { id }
-  } = await requestWithAppAuth('GET /orgs/{org}/installation', {
-    org
+  } = await requestWithAppAuth('GET /repos/{owner}/{repo}/installation', {
+    owner,
+    repo
   })
 
   return id
 }
 
-async function getInstallationAuthenticatedRequest({ org }) {
-  const installationId = await getOrganizationInstallationId({
-    org
+async function getInstallationAuthenticatedRequest({ owner, repo }) {
+  const installationId = await getInstallationId({
+    owner,
+    repo
   })
 
   const installationAuth = await appAuth({
@@ -37,7 +39,7 @@ async function getInstallationAuthenticatedRequest({ org }) {
     headers: {
       authorization: `token ${installationAuth.token}`
     },
-    org
+    org: owner
   })
 }
 

@@ -1,7 +1,9 @@
 import { getInstallationAuthenticatedRequest } from '../utils/octokit.js'
+import verifyRequest from '../verifyRequest.js'
 
 export default function checkRoutes(fastify, options, done) {
   fastify.post('/checks', {
+    preHandler: verifyRequest,
     handler: async function addCheck(req) {
       const { body } = req
 
@@ -15,7 +17,10 @@ export default function checkRoutes(fastify, options, done) {
       } = body
 
       const installationAuthenticatedRequest =
-        await getInstallationAuthenticatedRequest({ org: ownerLogin })
+        await getInstallationAuthenticatedRequest({
+          owner: ownerLogin,
+          repo: repositoryName
+        })
 
       if (
         senderLogin === 'guizordan' &&
@@ -23,6 +28,16 @@ export default function checkRoutes(fastify, options, done) {
         conclusion === 'failure'
       ) {
         console.log(conclusion)
+        // await installationAuthenticatedRequest(
+        //   'POST /repos/{owner}/{repo}/issues',
+        //   {
+        //     owner: ownerLogin,
+        //     repo: repositoryName,
+        //     title: 'Found a bug',
+        //     body: "I'm having a problem with this.",
+        //     labels: ['bug']
+        //   }
+        // )
         /**
          * @tbd
          */
