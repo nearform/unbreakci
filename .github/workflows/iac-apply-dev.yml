@@ -48,4 +48,4 @@ jobs:
       - name: Apply Infra - DEV
         working-directory: ./infra/
         id: apply_infra
-        run: terraform apply -var-file=env/dev/dev.tfvars -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan

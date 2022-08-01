@@ -46,4 +46,4 @@ jobs:
       - name: Apply Infra - PROD
         working-directory: ./infra/
         id: apply_infra
-        run: terraform plan -var-file=env/prod/prod.tfvars -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan
