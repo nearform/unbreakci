@@ -55,3 +55,6 @@ jobs:
           with:
             service: 'unbreakci-${{ inputs.env }}'
             image: $IMAGE_NAME
+            project_id: ${{ env.project_id }}
+            flags: --allow-unauthenticated
+            source: .
