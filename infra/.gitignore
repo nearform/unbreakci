@@ -5,3 +5,4 @@
 .iac-test
 key.json
 out.json
+.terraform
