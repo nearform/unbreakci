@@ -1,4 +1,3 @@
-import { join } from 'desm'
 import envSchema from 'env-schema'
 import S from 'fluent-json-schema'
 
@@ -10,7 +9,7 @@ const schema = S.object()
 
 const config = envSchema({
   schema,
-  dotenv: { path: join(import.meta.url, '.env') }
+  dotenv: true
 })
 
 export default config

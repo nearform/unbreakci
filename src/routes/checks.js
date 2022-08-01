@@ -1,56 +1,7 @@
 import { getInstallationAuthenticatedRequest } from '../utils/octokit.js'
 
-const Action = {
-  type: 'string'
-}
-
-const User = {
-  type: 'object',
-  properties: {
-    login: {
-      type: 'string'
-    }
-  }
-}
-
-const CheckSuite = {
-  type: 'object',
-  properties: {
-    status: {
-      type: 'string'
-    },
-    conclusion: {
-      type: 'string'
-    }
-  }
-}
-
-const Repository = {
-  type: 'object',
-  properties: {
-    name: {
-      type: 'string'
-    },
-    owner: User
-  }
-}
-
-const schema = {
-  body: {
-    type: 'object',
-    required: ['action', 'sender', 'check_suite', 'repository'],
-    properties: {
-      action: Action,
-      sender: User,
-      check_suite: CheckSuite,
-      repository: Repository
-    }
-  }
-}
-
 export default function checkRoutes(fastify, options, done) {
   fastify.post('/checks', {
-    schema,
     handler: async function addCheck(req) {
       const { body } = req
 
