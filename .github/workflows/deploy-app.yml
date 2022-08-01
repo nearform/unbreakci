@@ -13,6 +13,8 @@ on:
         required: true
       gcp_sa:
         required: true
+      
+
 jobs:
     deploy:
         name: Setup Gcloud Account
@@ -25,7 +27,7 @@ jobs:
           gcp_service_region: us-central1
 
         steps:
-        - name: Checkout repository
+        - name: Deploy New App Version
           uses: actions/checkout@v3
           with:
             ref: ${{ github.head_ref }}
@@ -58,5 +60,7 @@ jobs:
             region: ${{ env.gcp_service_region }}
             image: ${{ env.IMAGE_NAME }}
             project_id: ${{ env.project_id }}
-            
+            flags: --allow-unauthenticated
+            suffix: ${{ github.sha }}
+            source: .
 
