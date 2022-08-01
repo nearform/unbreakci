@@ -58,3 +58,4 @@ jobs:
             project_id: ${{ env.project_id }}
             flags: --allow-unauthenticated
             source: .
+            
