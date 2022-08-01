@@ -10,7 +10,7 @@ on:
 jobs:
   deploy-dev-app:
     name: deploy the DEV app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
