@@ -1,7 +1,6 @@
 import Fastify from 'fastify'
 import checkRoutes from './routes/checks.js'
 import config from '../config.js'
-import { getInstallationAuthenticatedOctokit } from './utils/octokit.js'
 
 export default async function buildServer() {
   const fastify = Fastify({
@@ -9,9 +8,6 @@ export default async function buildServer() {
       level: config.LOG_LEVEL
     }
   })
-
-  const octokit = await getInstallationAuthenticatedOctokit()
-  fastify.decorate('octokit', octokit)
 
   fastify.register(checkRoutes)
 

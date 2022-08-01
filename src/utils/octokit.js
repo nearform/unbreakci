@@ -1,4 +1,3 @@
-import { Octokit } from 'octokit'
 import { createAppAuth } from '@octokit/auth-app'
 import { request } from '@octokit/request'
 import config from '../../config.js'
@@ -8,37 +7,38 @@ const appAuth = createAppAuth({
   privateKey: config.APP_KEY
 })
 
-const requestWithAuth = request.defaults({
+const requestWithAppAuth = request.defaults({
   request: {
     hook: appAuth.hook
   }
 })
 
-async function getAppInstallationIdForOrganization() {
+async function getOrganizationInstallationId({ org }) {
   const {
     data: { id }
-  } = await requestWithAuth('GET /orgs/{org}/installation', {
-    org: config.ORG
+  } = await requestWithAppAuth('GET /orgs/{org}/installation', {
+    org
   })
 
   return id
 }
 
-async function getInstallationAuthenticatedOctokit() {
-  console.log('setting octokit up...')
-  const installationId = await getAppInstallationIdForOrganization()
+async function getInstallationAuthenticatedRequest({ org }) {
+  const installationId = await getOrganizationInstallationId({
+    org
+  })
 
-  return new Octokit({
-    authStrategy: createAppAuth,
-    auth: {
-      appId: config.APP_ID,
-      privateKey: config.APP_KEY,
-      installationId
-    }
+  const installationAuth = await appAuth({
+    type: 'installation',
+    installationId
+  })
+
+  return request.defaults({
+    headers: {
+      authorization: `token ${installationAuth.token}`
+    },
+    org
   })
 }
 
-export {
-  getAppInstallationIdForOrganization,
-  getInstallationAuthenticatedOctokit
-}
+export { appAuth, getInstallationAuthenticatedRequest }

@@ -1,3 +1,5 @@
+import { getInstallationAuthenticatedRequest } from '../utils/octokit.js'
+
 const Action = {
   type: 'string'
 }
@@ -50,7 +52,6 @@ export default function checkRoutes(fastify, options, done) {
   fastify.post('/checks', {
     schema,
     handler: async function addCheck(req) {
-      const { octokit } = fastify
       const { body } = req
 
       const {
@@ -61,6 +62,9 @@ export default function checkRoutes(fastify, options, done) {
           owner: { login: ownerLogin }
         }
       } = body
+
+      const installationAuthenticatedRequest =
+        await getInstallationAuthenticatedRequest({ org: ownerLogin })
 
       if (
         senderLogin === 'guizordan' &&
@@ -77,10 +81,14 @@ export default function checkRoutes(fastify, options, done) {
         // }
       }
 
-      const { data: issues } = await octokit.rest.issues.listForRepo({
-        owner: ownerLogin,
-        repo: repositoryName
-      })
+      const { data: issues } = await installationAuthenticatedRequest(
+        'GET /repos/{owner}/{repo}/issues',
+        {
+          owner: ownerLogin,
+          repo: repositoryName
+        }
+      )
+
       return issues
     }
   })
