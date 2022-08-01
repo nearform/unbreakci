@@ -3,7 +3,7 @@ data "google_project" "project" {
 
 resource "google_cloud_run_service" "this" {
 
-  name     = var.project
+  name     = "${var.project}-${var.env}"
   location = var.region
 
   template {
@@ -46,9 +46,11 @@ resource "google_cloud_run_service" "this" {
       annotations = merge(
         var.annotations,
         {
-          #"run.googleapis.com/ingress"       = var.public_access ? "all" : "internal"
-          "autoscaling.knative.dev/minScale" = var.min_scale
-          "autoscaling.knative.dev/maxScale" = var.max_scale
+          "run.googleapis.com/ingress"              = var.public_access ? "all" : "internal"
+          "run.googleapis.com/vpc-access-egress"    = "all-traffic"
+          "autoscaling.knative.dev/minScale"        = var.min_scale
+          "autoscaling.knative.dev/maxScale"        = var.max_scale
+          "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
         }
       )
     }

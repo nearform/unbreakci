@@ -9,17 +9,18 @@ module "network" {
   private_service_ips_range_len = var.private_service_ips_range_len
 }
 
-
 module "cloudrun" {
-  source    = "./modules/cloud_run"
-  project   = var.project
-  env       = var.env
-  region    = var.region
-  app_name  = var.app_name
-  min_scale = var.min_scale
-  max_scale = var.max_scale
-  ports     = [{
-    name           = "http"
+  source             = "./modules/cloud_run"
+  project            = var.project
+  env                = var.env
+  region             = var.region
+  app_name           = var.app_name
+  min_scale          = var.min_scale
+  max_scale          = var.max_scale
+  vpc_connector_name = module.network.vpc_connector_name
+  public_access      = var.public_access
+  ports = [{
+    name           = "h2c"
     container_port = var.ports
   }]
   env_vars = [{
@@ -32,7 +33,7 @@ module "cloudrun" {
     key       = "1"
   }]
 
-  depends_on = [module.network, module.sqldb]
+  depends_on = [module.network, module.sqldb, module.gcr]
 }
 
 module "secret" {
@@ -47,11 +48,23 @@ module "secret" {
 }
 
 module "sqldb" {
-  source           = "github.com/nearform/terraform-google-sql-db//modules/postgresql?ref=v8.0.1"
-  name             = "${var.app_name}-${var.env}-db"
-  region           = var.region
-  project_id       = var.project
-  zone             = "${var.region}-a"
-  database_version = var.db_version
-  user_name        = var.db_username
+  source                  = "./modules/sqldb"
+  name                    = "${var.app_name}-${var.env}-db-01"
+  region                  = var.region
+  zone                    = var.zone
+  db_username             = var.db_username
+  db_password             = module.secret.secret_random[0]
+  db_tier                 = var.db_tier
+  db_version              = var.db_version
+  compute_private_network = module.network.vpc_network_id
+  deletion_protection     = var.deletion_protection
+  depends_on              = [module.network, module.secret]
+}
+
+
+module "gcr" {
+  source   = "./modules/gcr"
+  project  = var.project
+  location = var.location
+
 }

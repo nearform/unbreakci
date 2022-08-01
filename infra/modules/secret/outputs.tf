@@ -1,3 +1,3 @@
-output "gen_id" {
-  value = google_secret_manager_secret.gen.*.secret_id
+output "secret_random" {
+  value = random_password.secret.*.result
 }

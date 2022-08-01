@@ -1,3 +1,2 @@
-bucket                      = "terraform-unbreakci-tfstats-dev"
+bucket                      = "terraform-unbreakci-tfstats"
 prefix                      = "terraform-dev.tfstate"
-credentials                 = "key.json"
