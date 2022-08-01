@@ -17,7 +17,7 @@ jobs:
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
-      project-id: ${{ secrets.GCP_PROJECT_ID }}
+      project_id: ${{ secrets.GCP_PROJECT_ID }}
       
 
 
@@ -30,4 +30,4 @@ jobs:
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
-      project-id: ${{ secrets.GCP_PROJECT_ID }}
+      project_id: ${{ secrets.GCP_PROJECT_ID }}
