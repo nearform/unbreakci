@@ -24,6 +24,8 @@ jobs:
         runs-on: ubuntu-latest
         env:
           IMAGE_NAME: gcr.io/${{ secrets.project_id }}/unbreakci-${{ inputs.env }}:${{ github.sha }}
+          gcp_servie_region: us-central1-a
+
         steps:
 
         - name: GCP Authentication
@@ -54,8 +56,9 @@ jobs:
           uses: 'google-github-actions/deploy-cloudrun@v0'
           with:
             service: 'unbreakci-${{ inputs.env }}'
-            image: $IMAGE_NAME
+            region: ${{ env.gcp_servie_region }}
+            image: ${{ env.IMAGE_NAME }}
             project_id: ${{ env.project_id }}
             flags: --allow-unauthenticated
             source: .
-            
+
