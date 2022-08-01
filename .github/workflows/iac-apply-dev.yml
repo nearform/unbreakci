@@ -36,10 +36,6 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_PROVIDER_NAME }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
-      - name: Initialize the Token
-        working-directory: ./infra/
-        run: echo -n /home/runner/work/unbreakci/unbreakci/gha-creds-*.json > ./infra/key.json
-
       - name: Initialize project
         working-directory: ./infra/
         run: terraform init -backend-config=env/dev/backend.hcl  -var-file=env/dev/dev.tfvars -reconfigure
