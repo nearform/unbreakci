@@ -7,29 +7,7 @@ const appAuth = createAppAuth({
   privateKey: config.APP_KEY
 })
 
-async function getInstallationId({ owner, repo }) {
-  const requestWithAppAuth = request.defaults({
-    request: {
-      hook: appAuth.hook
-    }
-  })
-
-  const {
-    data: { id }
-  } = await requestWithAppAuth('GET /repos/{owner}/{repo}/installation', {
-    owner,
-    repo
-  })
-
-  return id
-}
-
-async function getInstallationAuthenticatedRequest({ owner, repo }) {
-  const installationId = await getInstallationId({
-    owner,
-    repo
-  })
-
+async function getInstallationAuthenticatedRequest({ installationId }) {
   const installationAuth = await appAuth({
     type: 'installation',
     installationId
@@ -38,21 +16,8 @@ async function getInstallationAuthenticatedRequest({ owner, repo }) {
   return request.defaults({
     headers: {
       authorization: `token ${installationAuth.token}`
-    },
-    org: owner
-  })
-}
-
-async function getRepositoryIssues({ customRequest, owner, repo }) {
-  const { data: issues } = await customRequest(
-    'GET /repos/{owner}/{repo}/issues',
-    {
-      owner,
-      repo
     }
-  )
-
-  return issues
+  })
 }
 
 async function getPullRequest({ customRequest, owner, repo, pullNumber }) {
@@ -68,21 +33,28 @@ async function getPullRequest({ customRequest, owner, repo, pullNumber }) {
   return data
 }
 
-async function createBugIssue({ customRequest, owner, repo, title, body }) {
-  const newIssue = await customRequest('POST /repos/{owner}/{repo}/issues', {
-    owner,
-    repo,
-    title,
-    body,
-    labels: ['bug']
+async function getProjectColumns({ customRequest, projectId }) {
+  return await customRequest('GET /projects/{project_id}/columns', {
+    project_id: projectId
   })
+}
 
-  return newIssue
+async function moveCardToColumn({
+  customRequest,
+  cardId,
+  columnId = 1,
+  position = 'bottom'
+}) {
+  return await customRequest('POST /projects/columns/cards/{card_id}/moves', {
+    card_id: cardId,
+    column_id: columnId,
+    position
+  })
 }
 
 export {
-  createBugIssue,
   getInstallationAuthenticatedRequest,
-  getRepositoryIssues,
-  getPullRequest
+  getProjectColumns,
+  getPullRequest,
+  moveCardToColumn
 }

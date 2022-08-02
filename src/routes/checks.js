@@ -1,80 +1,69 @@
 import {
-  createBugIssue,
   getInstallationAuthenticatedRequest,
+  getProjectColumns,
   getPullRequest,
-  getRepositoryIssues
+  moveCardToColumn
 } from '../utils/octokit.js'
 import verifyRequest from '../verifyRequest.js'
+import config from '../../config.js'
 
-const dependabotLogin = 'guizordan'
-
-export default function checkRoutes(fastify, options, done) {
+export default async function checkRoutes(fastify) {
   fastify.post('/checks', {
     preHandler: verifyRequest,
     handler: async function addCheck(req) {
-      const { body } = req
-      const { check_suite, repository, sender } = body
+      const { check_suite, repository, installation } = req.body
 
-      if (check_suite) {
-        const { pull_requests: pullRequests, status, conclusion } = check_suite
-        const {
-          name: repositoryName,
-          owner: { login: ownerLogin }
-        } = repository
+      if (!check_suite) {
+        return
+      }
 
-        const { login: senderLogin } = sender
+      const { pull_requests: pullRequests, status, conclusion } = check_suite
 
-        const isAFailingDependabotCheckSuite =
-          senderLogin === dependabotLogin &&
-          status === 'completed' &&
-          conclusion === 'failure' &&
-          pullRequests.length
+      const {
+        name: repositoryName,
+        owner: { login: ownerLogin }
+      } = repository
 
-        if (isAFailingDependabotCheckSuite) {
-          const installationAuthenticatedRequest =
-            await getInstallationAuthenticatedRequest({
-              owner: ownerLogin,
-              repo: repositoryName
-            })
+      const incompleteCheckSuite = status !== 'completed'
+      const successfulCheckSuite = conclusion === 'success'
 
-          const issues = await getRepositoryIssues({
-            customRequest: installationAuthenticatedRequest,
-            owner: ownerLogin,
-            repo: repositoryName
-          })
+      if (incompleteCheckSuite || successfulCheckSuite) {
+        return
+      }
 
-          for (const pr of pullRequests) {
-            const { title: pullRequestTitle } = await getPullRequest({
-              customRequest: installationAuthenticatedRequest,
-              owner: ownerLogin,
-              repo: repositoryName,
-              pullNumber: pr.number
-            })
+      const installationAuthenticatedRequest =
+        await getInstallationAuthenticatedRequest({
+          installationId: installation.id
+        })
 
-            const newIssueTitle = `Fix ${pullRequestTitle} failure`
+      for (const pr of pullRequests) {
+        const pullRequest = await getPullRequest({
+          customRequest: installationAuthenticatedRequest,
+          owner: ownerLogin,
+          repo: repositoryName,
+          pullNumber: pr.number
+        })
 
-            const isIssueDuplicated = issues.some(
-              issue => issue.title === newIssueTitle
-            )
+        const { login: prAuthor } = pullRequest.user
+        const validPrAuthor = prAuthor === config.PR_AUTHOR
 
-            if (!isIssueDuplicated) {
-              const newIssue = await createBugIssue({
-                customRequest: installationAuthenticatedRequest,
-                owner: ownerLogin,
-                repo: repositoryName,
-                title: newIssueTitle,
-                body: "I'm having a problem with this."
-              })
-
-              return newIssue
-            }
-          }
-
-          return {}
+        if (!validPrAuthor) {
+          break
         }
+
+        const projectColumns = await getProjectColumns({
+          customRequest: installationAuthenticatedRequest,
+          projectId: config.PROJECT_ID
+        })
+
+        console.log(projectColumns)
+
+        await moveCardToColumn({
+          customRequest: installationAuthenticatedRequest,
+          cardId: 123,
+          columnId: 1
+        })
       }
     }
   })
-
-  done()
 }

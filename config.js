@@ -2,10 +2,14 @@ import envSchema from 'env-schema'
 import S from 'fluent-json-schema'
 
 const schema = S.object()
-  .prop('PORT', S.number().default(8080))
-  .prop('LOG_LEVEL', S.string().default('info'))
+  .prop('PORT', S.number().default(3000))
   .prop('APP_ID', S.string().default(''))
   .prop('APP_KEY', S.string().default(''))
+  .prop('WEBHOOK_SECRET', S.string().default(''))
+  .prop('COLUMN_NAME', S.string().default(''))
+  .prop('PROJECT_ID', S.number().default(null))
+  .prop('PR_AUTHOR', S.string().default('dependabot[bot]'))
+  .prop('LOG_LEVEL', S.string().default('info'))
 
 const config = envSchema({
   schema,
