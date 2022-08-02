@@ -7,13 +7,13 @@ const appAuth = createAppAuth({
   privateKey: config.APP_KEY
 })
 
-const requestWithAppAuth = request.defaults({
-  request: {
-    hook: appAuth.hook
-  }
-})
-
 async function getInstallationId({ owner, repo }) {
+  const requestWithAppAuth = request.defaults({
+    request: {
+      hook: appAuth.hook
+    }
+  })
+
   const {
     data: { id }
   } = await requestWithAppAuth('GET /repos/{owner}/{repo}/installation', {
@@ -43,4 +43,46 @@ async function getInstallationAuthenticatedRequest({ owner, repo }) {
   })
 }
 
-export { appAuth, getInstallationAuthenticatedRequest }
+async function getRepositoryIssues({ customRequest, owner, repo }) {
+  const { data: issues } = await customRequest(
+    'GET /repos/{owner}/{repo}/issues',
+    {
+      owner,
+      repo
+    }
+  )
+
+  return issues
+}
+
+async function getPullRequest({ customRequest, owner, repo, pullNumber }) {
+  const { data } = await customRequest(
+    'GET /repos/{owner}/{repo}/pulls/{pull_number}',
+    {
+      owner,
+      repo,
+      pull_number: pullNumber
+    }
+  )
+
+  return data
+}
+
+async function createBugIssue({ customRequest, owner, repo, title, body }) {
+  const newIssue = await customRequest('POST /repos/{owner}/{repo}/issues', {
+    owner,
+    repo,
+    title,
+    body,
+    labels: ['bug']
+  })
+
+  return newIssue
+}
+
+export {
+  createBugIssue,
+  getInstallationAuthenticatedRequest,
+  getRepositoryIssues,
+  getPullRequest
+}

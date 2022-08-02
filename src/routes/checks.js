@@ -1,61 +1,78 @@
-import { getInstallationAuthenticatedRequest } from '../utils/octokit.js'
+import {
+  createBugIssue,
+  getInstallationAuthenticatedRequest,
+  getPullRequest,
+  getRepositoryIssues
+} from '../utils/octokit.js'
 import verifyRequest from '../verifyRequest.js'
+
+const dependabotLogin = 'guizordan'
 
 export default function checkRoutes(fastify, options, done) {
   fastify.post('/checks', {
     preHandler: verifyRequest,
     handler: async function addCheck(req) {
       const { body } = req
+      const { check_suite, repository, sender } = body
 
-      const {
-        sender: { login: senderLogin },
-        check_suite: { status, conclusion },
-        repository: {
+      if (check_suite) {
+        const { pull_requests: pullRequests, status, conclusion } = check_suite
+        const {
           name: repositoryName,
           owner: { login: ownerLogin }
+        } = repository
+
+        const { login: senderLogin } = sender
+
+        const isAFailingDependabotCheckSuite =
+          senderLogin === dependabotLogin &&
+          status === 'completed' &&
+          conclusion === 'failure' &&
+          pullRequests.length
+
+        if (isAFailingDependabotCheckSuite) {
+          const installationAuthenticatedRequest =
+            await getInstallationAuthenticatedRequest({
+              owner: ownerLogin,
+              repo: repositoryName
+            })
+
+          const issues = await getRepositoryIssues({
+            customRequest: installationAuthenticatedRequest,
+            owner: ownerLogin,
+            repo: repositoryName
+          })
+
+          for (const pr of pullRequests) {
+            const { title: pullRequestTitle } = await getPullRequest({
+              customRequest: installationAuthenticatedRequest,
+              owner: ownerLogin,
+              repo: repositoryName,
+              pullNumber: pr.number
+            })
+
+            const newIssueTitle = `Fix ${pullRequestTitle} failure`
+
+            const isIssueDuplicated = issues.some(
+              issue => issue.title === newIssueTitle
+            )
+
+            if (!isIssueDuplicated) {
+              const newIssue = await createBugIssue({
+                customRequest: installationAuthenticatedRequest,
+                owner: ownerLogin,
+                repo: repositoryName,
+                title: newIssueTitle,
+                body: "I'm having a problem with this."
+              })
+
+              return newIssue
+            }
+          }
+
+          return {}
         }
-      } = body
-
-      const installationAuthenticatedRequest =
-        await getInstallationAuthenticatedRequest({
-          owner: ownerLogin,
-          repo: repositoryName
-        })
-
-      if (
-        senderLogin === 'guizordan' &&
-        status === 'completed' &&
-        conclusion === 'failure'
-      ) {
-        console.log(conclusion)
-        // await installationAuthenticatedRequest(
-        //   'POST /repos/{owner}/{repo}/issues',
-        //   {
-        //     owner: ownerLogin,
-        //     repo: repositoryName,
-        //     title: 'Found a bug',
-        //     body: "I'm having a problem with this.",
-        //     labels: ['bug']
-        //   }
-        // )
-        /**
-         * @tbd
-         */
-        // const duplicatedIssue = issues.some(issue => issue.title === title)
-        // if (!duplicatedIssue) {
-        //   return reply.send(issues[0])
-        // }
       }
-
-      const { data: issues } = await installationAuthenticatedRequest(
-        'GET /repos/{owner}/{repo}/issues',
-        {
-          owner: ownerLogin,
-          repo: repositoryName
-        }
-      )
-
-      return issues
     }
   })
 
