@@ -48,7 +48,7 @@ export default async function checkRoutes(fastify) {
         const validPrAuthor = prAuthor === config.PR_AUTHOR
 
         if (!validPrAuthor) {
-          break
+          continue
         }
 
         const projectColumns = await getProjectColumns({
