@@ -26,7 +26,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
     with:
-      env: dev
+      env: prod
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
