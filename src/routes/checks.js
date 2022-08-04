@@ -1,7 +1,8 @@
 import {
   getInstallationToken,
   getPullRequestAndProjectDetails,
-  addPrToProject
+  addPrToProject,
+  moveCardToProjectColumn
 } from '../utils/octokit.js'
 import verifyRequest from '../verifyRequest.js'
 import config from '../../config.js'
@@ -55,10 +56,26 @@ export default async function checkRoutes(fastify) {
           continue
         }
 
-        await addPrToProject({
+        const {
+          addProjectV2ItemById: {
+            item: { id: projectV2AddedItemId }
+          }
+        } = await addPrToProject({
           installationToken,
           projectId: projectV2.id,
           contentId: pullRequest.id
+        })
+
+        const targetColumn = projectV2.field?.options.find(
+          option => option.name === config.COLUMN_NAME
+        )
+
+        await moveCardToProjectColumn({
+          installationToken,
+          projectId: projectV2.id,
+          itemId: projectV2AddedItemId,
+          columnId: targetColumn.id,
+          fieldId: projectV2.field?.id
         })
       }
     }

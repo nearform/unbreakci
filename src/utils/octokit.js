@@ -50,8 +50,10 @@ async function getPullRequestAndProjectDetails({
         id
         field(name: "Status"){
           ... on ProjectV2SingleSelectField {
+            id
             name
             options {
+              id
               name
             }
           }
@@ -92,9 +94,38 @@ async function addPrToProject({ installationToken, projectId, contentId }) {
   })
 }
 
+async function moveCardToProjectColumn({
+  installationToken,
+  projectId,
+  itemId,
+  columnId,
+  fieldId
+}) {
+  const moveCardToProjectColumnMutation = `
+  mutation moveCardToColumn($projectId: ID!, $itemId: ID!, $columnId: String!, $fieldId: ID!){
+    updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $columnId}}) {
+      projectV2Item {
+        id
+      }
+    }
+  }`
+
+  return await getGraphqlWithAuth({
+    installationToken,
+    query: moveCardToProjectColumnMutation,
+    parameters: {
+      projectId,
+      itemId,
+      columnId,
+      fieldId
+    }
+  })
+}
+
 export {
   addPrToProject,
   getInstallationToken,
   getGraphqlWithAuth,
-  getPullRequestAndProjectDetails
+  getPullRequestAndProjectDetails,
+  moveCardToProjectColumn
 }
