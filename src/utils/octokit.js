@@ -1,5 +1,5 @@
 import { createAppAuth } from '@octokit/auth-app'
-import { request } from '@octokit/request'
+import { graphql } from '@octokit/graphql'
 import config from '../../config.js'
 
 const appAuth = createAppAuth({
@@ -7,54 +7,94 @@ const appAuth = createAppAuth({
   privateKey: config.APP_KEY
 })
 
-async function getInstallationAuthenticatedRequest({ installationId }) {
+async function getInstallationToken({ installationId }) {
   const installationAuth = await appAuth({
     type: 'installation',
     installationId
   })
 
-  return request.defaults({
+  return installationAuth.token
+}
+
+function getGraphqlWithAuth({ installationToken, query, parameters }) {
+  const graphqlQuery = graphql.defaults({
     headers: {
-      authorization: `token ${installationAuth.token}`
+      authorization: `token ${installationToken}`
     }
   })
+
+  return graphqlQuery(query, parameters)
 }
 
-async function getPullRequest({ customRequest, owner, repo, pullNumber }) {
-  const { data } = await customRequest(
-    'GET /repos/{owner}/{repo}/pulls/{pull_number}',
-    {
-      owner,
-      repo,
-      pull_number: pullNumber
-    }
-  )
-
-  return data
-}
-
-async function getProjectColumns({ customRequest, projectId }) {
-  return await customRequest('GET /projects/{project_id}/columns', {
-    project_id: projectId
-  })
-}
-
-async function moveCardToColumn({
-  customRequest,
-  cardId,
-  columnId = 1,
-  position = 'bottom'
+async function getPullRequestAndProjectDetails({
+  installationToken,
+  ownerLogin,
+  repositoryName,
+  projectNumber,
+  pullRequestNumber
 }) {
-  return await customRequest('POST /projects/columns/cards/{card_id}/moves', {
-    card_id: cardId,
-    column_id: columnId,
-    position
+  const findPullRequestAndProjectDetails = `
+  query findPullRequestAndProjectDetails($ownerLogin: String!, $repositoryName: String!, $projectNumber: Int!, $pullRequestNumber: Int!){
+    organization(login: $ownerLogin){
+      id
+      repository(name: $repositoryName) {
+        id
+        pullRequest(number: $pullRequestNumber){
+          id
+          author {
+            login
+          }
+        }
+      }
+      projectV2(number: $projectNumber) {
+        id
+        field(name: "Status"){
+          ... on ProjectV2SingleSelectField {
+            name
+            options {
+              name
+            }
+          }
+        }
+      }
+    }
+  }`
+
+  return await getGraphqlWithAuth({
+    installationToken,
+    query: findPullRequestAndProjectDetails,
+    parameters: {
+      ownerLogin,
+      repositoryName,
+      projectNumber,
+      pullRequestNumber
+    }
+  })
+}
+
+async function addPrToProject({ installationToken, projectId, contentId }) {
+  const addPrToProjectMutation = `
+  mutation addPrToProject($projectId: ID!, $contentId: ID!){
+    addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+      item {
+        id
+      }
+    }
+  }`
+
+  return await getGraphqlWithAuth({
+    installationToken,
+    query: addPrToProjectMutation,
+    parameters: {
+      projectId,
+      contentId
+    }
   })
 }
 
 export {
-  getInstallationAuthenticatedRequest,
-  getProjectColumns,
-  getPullRequest,
-  moveCardToColumn
+  addPrToProject,
+  getInstallationToken,
+  getGraphqlWithAuth,
+  getPullRequestAndProjectDetails
 }

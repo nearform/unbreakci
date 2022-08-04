@@ -1,8 +1,7 @@
 import {
-  getInstallationAuthenticatedRequest,
-  getProjectColumns,
-  getPullRequest,
-  moveCardToColumn
+  getInstallationToken,
+  getPullRequestAndProjectDetails,
+  addPrToProject
 } from '../utils/octokit.js'
 import verifyRequest from '../verifyRequest.js'
 import config from '../../config.js'
@@ -31,37 +30,35 @@ export default async function checkRoutes(fastify) {
         return
       }
 
-      const installationAuthenticatedRequest =
-        await getInstallationAuthenticatedRequest({
-          installationId: installation.id
-        })
+      const installationToken = await getInstallationToken({
+        installationId: installation.id
+      })
 
       for (const pr of pullRequests) {
-        const pullRequest = await getPullRequest({
-          customRequest: installationAuthenticatedRequest,
-          owner: ownerLogin,
-          repo: repositoryName,
-          pullNumber: pr.number
+        const {
+          organization: {
+            repository: { pullRequest },
+            projectV2
+          }
+        } = await getPullRequestAndProjectDetails({
+          installationToken,
+          ownerLogin,
+          repositoryName,
+          projectNumber: config.PROJECT_NUMBER,
+          pullRequestNumber: pr.number
         })
 
-        const { login: prAuthor } = pullRequest.user
+        const { login: prAuthor } = pullRequest.author
         const validPrAuthor = prAuthor === config.PR_AUTHOR
 
         if (!validPrAuthor) {
           continue
         }
 
-        const projectColumns = await getProjectColumns({
-          customRequest: installationAuthenticatedRequest,
-          projectId: config.PROJECT_ID
-        })
-
-        console.log(projectColumns)
-
-        await moveCardToColumn({
-          customRequest: installationAuthenticatedRequest,
-          cardId: 123,
-          columnId: 1
+        await addPrToProject({
+          installationToken,
+          projectId: projectV2.id,
+          contentId: pullRequest.id
         })
       }
     }

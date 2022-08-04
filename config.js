@@ -7,7 +7,7 @@ const schema = S.object()
   .prop('APP_KEY', S.string().default(''))
   .prop('WEBHOOK_SECRET', S.string().default(''))
   .prop('COLUMN_NAME', S.string().default(''))
-  .prop('PROJECT_ID', S.number().default(null))
+  .prop('PROJECT_NUMBER', S.number().default(null))
   .prop('PR_AUTHOR', S.string().default('dependabot[bot]'))
   .prop('LOG_LEVEL', S.string().default('info'))
 
