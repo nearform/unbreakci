@@ -31,6 +31,13 @@ export default async function checkRoutes(fastify) {
         return
       }
 
+      if (pullRequests.length === 0) {
+        req.log.warn(
+          `No Pull Requests associated to Check Suite(id: ${check_suite.id}) were found.`
+        )
+        return
+      }
+
       const installationToken = await getInstallationToken({
         installationId: installation.id
       })
@@ -69,6 +76,13 @@ export default async function checkRoutes(fastify) {
         const targetColumn = projectV2.field?.options.find(
           option => option.name === config.COLUMN_NAME
         )
+
+        if (!targetColumn) {
+          req.log.warn(
+            `Board column with name "${config.COLUMN_NAME}" not found. Please check "COLUMN_NAME" environment variable`
+          )
+          return
+        }
 
         await moveCardToProjectColumn({
           installationToken,
