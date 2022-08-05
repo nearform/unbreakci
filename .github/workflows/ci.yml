@@ -2,8 +2,7 @@ name: Continuous Integration
 
 on: 
   push:
-   branches:
-    - master
+    branches: [master, force-dev-deploy]
   pull_request:
 
 jobs:

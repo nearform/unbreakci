@@ -2,8 +2,7 @@ name: Apply Infrastructure - DEV
 
 on:
   push:
-   branches:
-    - master    
+   branches: [master, force-dev-deploy]
 
 jobs:
   apply-dev-infra:
