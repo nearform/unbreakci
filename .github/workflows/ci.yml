@@ -1,9 +1,9 @@
 name: Continuous Integration
 
-on: 
+on:
+  workflow_dispatch:
   push:
-   branches:
-    - master
+    branches: [master, force-dev-deploy]
   pull_request:
 
 jobs:
