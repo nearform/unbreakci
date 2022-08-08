@@ -50,5 +50,5 @@ jobs:
             flags: --allow-unauthenticated
             suffix: ${{ github.sha }}
             source: .
-            no_traffic: true
+            # no_traffic: true
 
