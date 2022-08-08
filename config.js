@@ -8,7 +8,7 @@ const schema = S.object()
   .prop('WEBHOOK_SECRET', S.string().default(''))
   .prop('COLUMN_NAME', S.string().default(''))
   .prop('PROJECT_NUMBER', S.number().default(null))
-  .prop('PR_AUTHOR', S.string().default('dependabot[bot]'))
+  .prop('PR_AUTHOR', S.string().default('dependabot'))
   .prop('LOG_LEVEL', S.string().default('info'))
 
 const config = envSchema({
