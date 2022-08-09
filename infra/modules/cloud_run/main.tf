@@ -9,7 +9,7 @@ resource "google_cloud_run_service" "this" {
   template {
     spec {
       containers {
-        image = "us-central1-docker.pkg.dev/unbreak-ci/cloud-run-source-deploy/unbreakci-dev@sha256:4d7d7ff7f5bef5b3e8ff8c6fa28e8a7ed6601825e1e9aa67f46f688414ba49de"
+        image = "gcr.io/${var.project}/${var.app_name}-${var.env}:latest"
 
         dynamic "env" {
           for_each = var.env_vars
