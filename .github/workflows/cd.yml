@@ -15,6 +15,7 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
+      project_number: 20
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}

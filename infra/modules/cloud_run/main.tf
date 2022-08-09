@@ -9,7 +9,7 @@ resource "google_cloud_run_service" "this" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project}/${var.app_name}-${var.env}:latest"
+        image = "us-central1-docker.pkg.dev/unbreak-ci/cloud-run-source-deploy/unbreakci-dev@sha256:4d7d7ff7f5bef5b3e8ff8c6fa28e8a7ed6601825e1e9aa67f46f688414ba49de"
 
         dynamic "env" {
           for_each = var.env_vars
@@ -46,14 +46,22 @@ resource "google_cloud_run_service" "this" {
       annotations = merge(
         var.annotations,
         {
-          "run.googleapis.com/ingress"              = var.public_access ? "all" : "internal"
+          # "run.googleapis.com/ingress"              = var.public_access ? "all" : "internal"
           "run.googleapis.com/vpc-access-egress"    = "all-traffic"
           "autoscaling.knative.dev/minScale"        = var.min_scale
           "autoscaling.knative.dev/maxScale"        = var.max_scale
-          "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
+          "run.googleapis.com/vpc-access-connector" = var.vpc_connector_id
         }
       )
     }
+  }
+  metadata {
+    annotations = merge(
+      var.annotations,
+      {
+        "run.googleapis.com/ingress"              = var.public_access ? "all" : "internal"
+      }
+    )
   }
 
   autogenerate_revision_name = true
