@@ -1,6 +1,8 @@
 import buildServer from './src/server.js'
 import config from './config.js'
 
+console.log(config)
+
 async function start(fastify) {
   try {
     await fastify.listen({ port: config.PORT, host: '0.0.0.0' })
