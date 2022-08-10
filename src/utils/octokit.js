@@ -37,7 +37,7 @@ async function getPullRequestProjectItems({
     organization(login: $ownerLogin){
       repository(name: $repositoryName){
         pullRequest(number: $prNumber) {
-          projectItems(first: 10){
+          projectItems(first: 1){
             nodes {
               id
             }
@@ -58,10 +58,10 @@ async function getPullRequestProjectItems({
   })
 
   const {
-    repository: { projectItems }
+    repository: { pullRequest }
   } = pullRequestProjectItemsWrapper.organization
 
-  return projectItems
+  return pullRequest.projectItems.nodes
 }
 
 async function getProjectV2Id({
@@ -128,7 +128,7 @@ async function getPullRequestAndProjectDetails({
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: findPullRequestAndProjectDetails,
     parameters: {
@@ -148,7 +148,7 @@ async function removePrFromProject({ installationToken, projectId, itemId }) {
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: removePrFromProjectMutation,
     parameters: {
@@ -168,7 +168,7 @@ async function addPrToProject({ installationToken, projectId, contentId }) {
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: addPrToProjectMutation,
     parameters: {
@@ -194,7 +194,7 @@ async function moveCardToProjectColumn({
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: moveCardToProjectColumnMutation,
     parameters: {

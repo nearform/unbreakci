@@ -9,12 +9,14 @@ import {
 export default async function removeClosedPrFromProjectBoard(req) {
   const { action, pull_request, repository, installation } = req.body
 
+  const { merged } = pull_request
   const { login: prAuthor } = pull_request.user
   const validPrAuthor = prAuthor === config.PR_AUTHOR
 
-  const validPullRequestHasBeenClosed = action === 'closed' && validPrAuthor
+  const unmergedPullRequestHasBeenClosed =
+    action === 'closed' && !merged && validPrAuthor
 
-  if (validPullRequestHasBeenClosed) {
+  if (unmergedPullRequestHasBeenClosed) {
     const installationToken = await getInstallationToken({
       installationId: installation.id
     })
@@ -39,7 +41,7 @@ export default async function removeClosedPrFromProjectBoard(req) {
     await removePrFromProject({
       installationToken,
       projectId: projectV2Id,
-      itemId: pullRequestProjectItems.nodes[0].id
+      itemId: pullRequestProjectItems[0].id
     })
   }
 }
