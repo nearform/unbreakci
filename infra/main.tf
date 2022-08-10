@@ -17,21 +17,58 @@ module "cloudrun" {
   app_name           = var.app_name
   min_scale          = var.min_scale
   max_scale          = var.max_scale
-  vpc_connector_name = module.network.vpc_connector_name
+  vpc_connector_id   = module.network.vpc_connector_id
   public_access      = var.public_access
   ports = [{
-    name           = "h2c"
+    name           = "http1"
     container_port = var.ports
   }]
   env_vars = [{
     name  = "DB_ADDRESS"
     value = ""
+  },
+  { 
+    name  = "APP_ID"
+    value = "222015"
+  
+  },
+  { 
+    name  = "PR_AUTHOR"
+    value = "dependabot"
+  
+  },
+  { 
+    name  = "PROJECT_NUMBER"
+    value = ""
+  
+  },
+  { 
+    name  = "COLUMN_NAME"
+    value = "unbreakci"
+  
+  },
+  { 
+    name  = "LOG_LEVEL"
+    value = "info"
+  
   }]
   secret_refs = [{
     name      = "DB_PASSWORD"
     secret_id = "unbreak_${var.env}_db_password"
     key       = "1"
-  }]
+  },
+  { 
+    name      = "WEBHOOK_SECRET"
+    secret_id = "unbreak_${var.env}_webhook_secret"
+    key       = "1"
+  },
+  {
+    name      = "APP_KEY"
+    secret_id = "unbreak_${var.env}_app_key"
+    key       = "1"
+  }
+
+  ]
 
   depends_on = [module.network, module.sqldb, module.gcr]
 }

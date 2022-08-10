@@ -4,7 +4,7 @@ variable "min_scale" {}
 variable "max_scale" {}
 variable "app_name" {}
 variable "env" {}
-variable "vpc_connector_name" {}
+variable "vpc_connector_id" {}
 variable "public_access" {
   type    = bool
   default = false

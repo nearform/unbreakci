@@ -6,6 +6,9 @@ on:
       env:
         required: true
         type: string
+      project_number:
+        required: true
+        type: string
     secrets:
       project_id:
         required: true
@@ -50,4 +53,13 @@ jobs:
             flags: --allow-unauthenticated
             suffix: ${{ github.sha }}
             source: .
+            env_vars: |
+              APP_ID=222015
+              PR_AUTHOR=dependabot
+              PROJECT_NUMBER=${{ inputs.project_number }}
+              COLUMN_NAME=unbreakci
+              LOG_LEVEL=info
+            secrets: |
+              WEBHOOK_SECRET=unbreak_${{ inputs.env }}_webhook_secret:latest
+              APP_KEY=unbreak_${{ inputs.env }}_app_key:latest
 
