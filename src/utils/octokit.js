@@ -26,6 +26,34 @@ function getGraphqlWithAuth({ installationToken, query, parameters }) {
   return graphqlQuery(query, parameters)
 }
 
+async function getProjectV2Id({
+  installationToken,
+  ownerLogin,
+  projectNumber
+}) {
+  const findPullRequestId = `
+  query findPullRequestAndProjectDetails($ownerLogin: String!, $projectNumber: Int!){
+    organization(login: $ownerLogin){
+      projectV2(number: $projectNumber) {
+        id
+      }
+    }
+  }`
+
+  const {
+    organization: { projectV2 }
+  } = await getGraphqlWithAuth({
+    installationToken,
+    query: findPullRequestId,
+    parameters: {
+      projectNumber,
+      ownerLogin
+    }
+  })
+
+  return projectV2.id
+}
+
 async function getPullRequestAndProjectDetails({
   installationToken,
   ownerLogin,
@@ -70,6 +98,24 @@ async function getPullRequestAndProjectDetails({
       repositoryName,
       projectNumber,
       pullRequestNumber
+    }
+  })
+}
+
+async function removePrFromProject({ installationToken, projectId, itemId }) {
+  const removePrFromProjectMutation = `
+  mutation removePrFromProject($projectId: ID!, $itemId: ID!){
+    deleteProjectV2Item(input: {projectId: $projectId, itemId: $itemId}) {
+      deletedItemId
+    }
+  }`
+
+  return await getGraphqlWithAuth({
+    installationToken,
+    query: removePrFromProjectMutation,
+    parameters: {
+      projectId,
+      itemId
     }
   })
 }
@@ -126,6 +172,8 @@ export {
   addPrToProject,
   getInstallationToken,
   getGraphqlWithAuth,
+  getProjectV2Id,
   getPullRequestAndProjectDetails,
-  moveCardToProjectColumn
+  moveCardToProjectColumn,
+  removePrFromProject
 }
