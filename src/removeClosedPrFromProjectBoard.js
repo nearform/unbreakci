@@ -11,7 +11,7 @@ export default async function removeClosedPrFromProjectBoard(req) {
 
   const { merged } = pull_request
   const { login: prAuthor } = pull_request.user
-  const validPrAuthor = prAuthor === config.PR_AUTHOR
+  const validPrAuthor = prAuthor === `${config.PR_AUTHOR}[bot]`
 
   // if PR has been closed, not merged and is the target author, it'll proceed to remove it from the project board.
   const unmergedPullRequestHasBeenClosed =
