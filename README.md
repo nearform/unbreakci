@@ -9,6 +9,7 @@
 ## Setup:
 
 - Paste the cloud running server URL on the [Unbreak CI Github App Configuration Page](https://github.com/organizations/nearform/settings/apps/unbreak-ci) over the "Webhook" field;
+- The Webhook secret added below the webhook URL in the app should be the same as the one stored in the repo secrets;
 
 ## Env Variables
 
