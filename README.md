@@ -2,21 +2,22 @@
 
 # UnbreakCI Project
 
-## Main high level request here:
-- GitHub app to automatically add broken dependabot bumps to the project board: https://github.com/nearform/bench-draft-issues/issues/107  
-- "Dependabot is running in most of our repo with and our github action to automatically merge PRs is configured in the CI workflow: [https://github.com/fastify/github-action-merge-dependabot](https://github.com/fastify/github-action-merge-dependabot).  
-	- Sometimes bumps are not automatically merged because the build breaks. In those cases we usually want to have a look at them to see how to fix them, but they often go unnoticed.  
-	- We could create a GitHub app which subscribes to events so that when those PRs are not merged automatically, they are added to the board for manual inspection."  
+- [Github App](https://github.com/organizations/nearform/settings/apps/unbreak-ci) that automatically adds broken dependabot bumps to a pre-configured project board;
+- If the bump PR is closed with unmerged commits, it will be removed from the project board;
+- Listens to `check_suite` and `pull_request` [webhook events](https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads) to perform those two actions;
 
-## Project Board
-https://github.com/orgs/nearform/projects/16/views/1
+## Setup:
 
-## Repository based on the Bench Template
-A feature-packed template to start a new repository on the bench, including:
+- Paste the cloud running server URL on the [Unbreak CI Github App Configuration Page](https://github.com/organizations/nearform/settings/apps/unbreak-ci) over the "Webhook" field;
 
-- code linting with [ESlint](https://eslint.org) and [prettier](https://prettier.io)
-- pre-commit code linting and commit message linting with [husky](https://www.npmjs.com/package/husky) and [commitlint](https://commitlint.js.org/)
-- dependabot setup with automatic merging thanks to ["merge dependabot" GitHub action](https://github.com/fastify/github-action-merge-dependabot)
-- notifications about commits waiting to be released thanks to ["notify release" GitHub action](https://github.com/nearform/github-action-notify-release)
-- PRs' linked issues check with ["check linked issues" GitHub action](https://github.com/nearform/github-action-check-linked-issues)
-- Continuous Integration GitHub workflow
+## Env Variables
+
+- `APP_ID` => Can be found on the [App Configuration Page](https://github.com/organizations/nearform/settings/apps/unbreak-ci);
+- `APP_KEY` => Private key generated (Bitwarden);
+- `WEBHOOK_SECRET` => Secret password to validate the webhook calls (Bitwarden);
+- `PR_AUTHOR` => The monitored PR Author (defaults to "dependabot");
+- `PROJECT_NUMBER` => The Project number that the PRs will be moved to;
+- `COLUMN_NAME` => The Project Board column that the PRs will be moved to (if none is supplied, it'll be moved to a temporary "No Status" column);
+
+## [Project Board](https://github.com/orgs/nearform/projects/16/views/1)
+
