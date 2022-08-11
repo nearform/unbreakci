@@ -26,6 +26,72 @@ function getGraphqlWithAuth({ installationToken, query, parameters }) {
   return graphqlQuery(query, parameters)
 }
 
+async function getPullRequestProjectItems({
+  installationToken,
+  ownerLogin,
+  repositoryName,
+  prNumber
+}) {
+  const findPullRequestprojectItems = `
+  query findPullRequestprojectItem($ownerLogin: String!, $repositoryName: String!, $prNumber: Int!){
+    organization(login: $ownerLogin){
+      repository(name: $repositoryName){
+        pullRequest(number: $prNumber) {
+          projectItems(first: 1){
+            nodes {
+              id
+            }
+          }
+        }
+      }
+    }
+  }`
+
+  const pullRequestProjectItemsWrapper = await getGraphqlWithAuth({
+    installationToken,
+    query: findPullRequestprojectItems,
+    parameters: {
+      ownerLogin,
+      repositoryName,
+      prNumber
+    }
+  })
+
+  const {
+    repository: { pullRequest }
+  } = pullRequestProjectItemsWrapper.organization
+
+  return pullRequest.projectItems.nodes
+}
+
+async function getProjectV2Id({
+  installationToken,
+  ownerLogin,
+  projectNumber
+}) {
+  const findPullRequestId = `
+  query findProjectV2Id($ownerLogin: String!, $projectNumber: Int!){
+    organization(login: $ownerLogin){
+      projectV2(number: $projectNumber) {
+        id
+      }
+    }
+  }`
+
+  const {
+    organization: { projectV2 }
+  } = await getGraphqlWithAuth({
+    installationToken,
+    query: findPullRequestId,
+    parameters: {
+      projectNumber,
+      ownerLogin
+    }
+  })
+
+  return projectV2.id
+}
+
 async function getPullRequestAndProjectDetails({
   installationToken,
   ownerLogin,
@@ -62,7 +128,7 @@ async function getPullRequestAndProjectDetails({
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: findPullRequestAndProjectDetails,
     parameters: {
@@ -70,6 +136,24 @@ async function getPullRequestAndProjectDetails({
       repositoryName,
       projectNumber,
       pullRequestNumber
+    }
+  })
+}
+
+async function removePrFromProject({ installationToken, projectId, itemId }) {
+  const removePrFromProjectMutation = `
+  mutation removePrFromProject($projectId: ID!, $itemId: ID!){
+    deleteProjectV2Item(input: {projectId: $projectId, itemId: $itemId}) {
+      deletedItemId
+    }
+  }`
+
+  return getGraphqlWithAuth({
+    installationToken,
+    query: removePrFromProjectMutation,
+    parameters: {
+      projectId,
+      itemId
     }
   })
 }
@@ -84,7 +168,7 @@ async function addPrToProject({ installationToken, projectId, contentId }) {
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: addPrToProjectMutation,
     parameters: {
@@ -110,7 +194,7 @@ async function moveCardToProjectColumn({
     }
   }`
 
-  return await getGraphqlWithAuth({
+  return getGraphqlWithAuth({
     installationToken,
     query: moveCardToProjectColumnMutation,
     parameters: {
@@ -126,6 +210,9 @@ export {
   addPrToProject,
   getInstallationToken,
   getGraphqlWithAuth,
+  getProjectV2Id,
+  getPullRequestProjectItems,
   getPullRequestAndProjectDetails,
-  moveCardToProjectColumn
+  moveCardToProjectColumn,
+  removePrFromProject
 }

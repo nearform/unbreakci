@@ -1,5 +1,5 @@
 import Fastify from 'fastify'
-import checkRoutes from './routes/checks.js'
+import appRoutes from './routes.js'
 import config from '../config.js'
 
 export default async function buildServer() {
@@ -9,7 +9,7 @@ export default async function buildServer() {
     }
   })
 
-  fastify.register(checkRoutes)
+  fastify.register(appRoutes)
 
   return fastify
 }
