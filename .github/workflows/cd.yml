@@ -23,7 +23,7 @@ jobs:
 
   deploy-prod-app:
     name: deploy the PROD app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event_name == 'release'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: prod
