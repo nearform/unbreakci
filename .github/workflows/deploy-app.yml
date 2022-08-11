@@ -46,7 +46,7 @@ jobs:
         - name: Deploy Docker image
           uses: 'google-github-actions/deploy-cloudrun@v0'
           with:
-            service: 'unbreakci-${{ inputs.env }}'
+            service: 'unbreak-ci-${{ inputs.env }}'
             region: ${{ env.gcp_service_region }}
             image: ${{ env.IMAGE_NAME }}
             project_id: ${{ env.project_id }}
