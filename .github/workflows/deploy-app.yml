@@ -9,6 +9,10 @@ on:
       project_number:
         required: true
         type: string
+      column_name:
+        required: true
+        type: string
+
     secrets:
       project_id:
         required: true
@@ -46,7 +50,7 @@ jobs:
         - name: Deploy Docker image
           uses: 'google-github-actions/deploy-cloudrun@v0'
           with:
-            service: 'unbreak-ci-${{ inputs.env }}'
+            service: 'unbreakci-${{ inputs.env }}'
             region: ${{ env.gcp_service_region }}
             image: ${{ env.IMAGE_NAME }}
             project_id: ${{ env.project_id }}
@@ -57,7 +61,7 @@ jobs:
               APP_ID=222015
               PR_AUTHOR=dependabot
               PROJECT_NUMBER=${{ inputs.project_number }}
-              COLUMN_NAME=unbreakci
+              COLUMN_NAME=${{ inputs.column_name }}
               LOG_LEVEL=info
             secrets: |
               WEBHOOK_SECRET=unbreak_${{ inputs.env }}_webhook_secret:latest

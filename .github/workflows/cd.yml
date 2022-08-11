@@ -16,6 +16,7 @@ jobs:
     with:
       env: dev
       project_number: 20
+      column_name: unbreakci
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
@@ -27,7 +28,8 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: prod
-      project_number: 20
+      project_number: 6
+      column_name: Chores
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
