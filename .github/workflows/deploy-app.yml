@@ -9,6 +9,10 @@ on:
       project_number:
         required: true
         type: string
+      column_name:
+        required: true
+        type: string
+
     secrets:
       project_id:
         required: true
@@ -57,7 +61,7 @@ jobs:
               APP_ID=222015
               PR_AUTHOR=dependabot
               PROJECT_NUMBER=${{ inputs.project_number }}
-              COLUMN_NAME=unbreakci
+              COLUMN_NAME=${{ inputs.column_name }}
               LOG_LEVEL=info
             secrets: |
               WEBHOOK_SECRET=unbreak_${{ inputs.env }}_webhook_secret:latest

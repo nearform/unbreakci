@@ -11,11 +11,12 @@ on:
 jobs:
   deploy-dev-app:
     name: deploy the DEV app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event.pull_request.merged == true
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
       project_number: 20
+      column_name: unbreakci
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
@@ -23,11 +24,12 @@ jobs:
 
   deploy-prod-app:
     name: deploy the PROD app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: prod
-      project_number: 20
+      project_number: 6
+      column_name: Chores
     secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
