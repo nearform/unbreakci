@@ -13,6 +13,7 @@ export default async function removeClosedPrFromProjectBoard(req) {
   const { login: prAuthor } = pull_request.user
   const validPrAuthor = prAuthor === config.PR_AUTHOR
 
+  // if PR has been closed, not merged and is the target author, it'll proceed to remove it from the project board.
   const unmergedPullRequestHasBeenClosed =
     action === 'closed' && !merged && validPrAuthor
 
@@ -38,10 +39,12 @@ export default async function removeClosedPrFromProjectBoard(req) {
       prNumber: pull_request.number
     })
 
-    await removePrFromProject({
-      installationToken,
-      projectId: projectV2Id,
-      itemId: pullRequestProjectItems[0].id
-    })
+    if (pullRequestProjectItems.length) {
+      await removePrFromProject({
+        installationToken,
+        projectId: projectV2Id,
+        itemId: pullRequestProjectItems[0].id
+      })
+    }
   }
 }
