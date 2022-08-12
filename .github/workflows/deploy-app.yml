@@ -8,7 +8,7 @@ on:
         type: string
 
     secrets:
-      app_id:
+      app_id_github:
         required: true
       pr_author:
         required: true
@@ -58,8 +58,8 @@ jobs:
             suffix: ${{ github.sha }}
             source: .
             env_vars: |
-              APP_ID=${{ secrets.app_id }}
-              PR_AUTHOR={{ secrets.pr_author }}
+              APP_ID_GITHUB=${{ secrets.app_id_github }}
+              PR_AUTHOR=${{ secrets.pr_author }}
               PROJECT_NUMBER=${{ secrets.project_number }}
               COLUMN_NAME=${{ secrets.column_name }}
               LOG_LEVEL=info
