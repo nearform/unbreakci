@@ -12,7 +12,10 @@
 - The Webhook secret added below the webhook URL in the app should be the same as the one stored in the repo secrets;
 - Add the following permissions to your App:
   - Repository permissions > Pull Requests (read)
+  - Repository permissions > Checks (read)
   - Organization permissions > Projects (read/write)
+- Also, subscribe to "Pull Request" and "Check Suite" events;
+
 
 ## Env Variables
 
