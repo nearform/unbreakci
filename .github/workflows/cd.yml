@@ -9,7 +9,7 @@ on:
 jobs:
   deploy-dev-app:
     name: deploy the DEV app
-    if:  github.event.pull_request.merged == true
+    if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
