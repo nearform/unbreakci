@@ -3,8 +3,6 @@ name: Apply Infrastructure - PROD
 on:
   release:
     types: [published]
-    paths:
-      - 'infra/**'
 
 jobs:  
   apply-prod-infra:

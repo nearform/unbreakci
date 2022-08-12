@@ -6,14 +6,16 @@ on:
       env:
         required: true
         type: string
-      project_number:
-        required: true
-        type: string
-      column_name:
-        required: true
-        type: string
 
     secrets:
+      app_id_github:
+        required: true
+      pr_author:
+        required: true
+      project_number:
+        required: true
+      column_name:
+        required: true
       project_id:
         required: true
       gcp_provider_name:
@@ -30,7 +32,6 @@ jobs:
           contents: read 
         runs-on: ubuntu-latest
         env:
-          IMAGE_NAME: gcr.io/${{ secrets.project_id }}/unbreakci-${{ inputs.env }}:${{ github.sha }}
           gcp_service_region: us-central1
 
         steps:
@@ -52,16 +53,15 @@ jobs:
           with:
             service: 'unbreakci-${{ inputs.env }}'
             region: ${{ env.gcp_service_region }}
-            image: ${{ env.IMAGE_NAME }}
             project_id: ${{ env.project_id }}
             flags: --allow-unauthenticated
             suffix: ${{ github.sha }}
             source: .
             env_vars: |
-              APP_ID=222015
-              PR_AUTHOR=dependabot
-              PROJECT_NUMBER=${{ inputs.project_number }}
-              COLUMN_NAME=${{ inputs.column_name }}
+              APP_ID_GITHUB=${{ secrets.app_id_github }}
+              PR_AUTHOR=${{ secrets.pr_author }}
+              PROJECT_NUMBER=${{ secrets.project_number }}
+              COLUMN_NAME=${{ secrets.column_name }}
               LOG_LEVEL=info
             secrets: |
               WEBHOOK_SECRET=unbreak_${{ inputs.env }}_webhook_secret:latest

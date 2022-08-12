@@ -1,9 +1,8 @@
 name: Apply Infrastructure - DEV
 
 on:
-  workflow_dispatch:
   push:
-    branches: [master, force-dev-deploy]
+    branches: [master]
 
 jobs:
   apply-dev-infra:
