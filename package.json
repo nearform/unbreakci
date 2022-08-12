@@ -9,7 +9,7 @@
     "start": "node index.js",
     "lint": "eslint .",
     "test": "jest --passWithNoTests",
-    "prepare": "husky install"
+    "prepare": "npx husky install"
   },
   "repository": {
     "type": "git",
