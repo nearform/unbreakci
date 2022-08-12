@@ -1,36 +1,34 @@
 name: Continuous Delivery
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
   push:
-    branches: [master,force-dev-deploy]
-  pull_request:
+    branches: [master]
 
 jobs:
   deploy-dev-app:
     name: deploy the DEV app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event.pull_request.merged == true
+    if:  github.event.pull_request.merged == true
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
-      project_number: 20
-      column_name: unbreakci
     secrets:
+      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_DEV }}
+      column_name: ${{ secrets.COLUMN_NAME_GITHUB_DEV }}
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
 
   deploy-prod-app:
     name: deploy the PROD app
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.event_name == 'release'
+    if: github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: prod
-      project_number: 6
-      column_name: Chores
     secrets:
+      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_PROD }}
+      column_name: ${{ secrets.COLUMN_NAME_GITHUB_PROD }}
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
