@@ -4,13 +4,11 @@ on:
   release:
     types: [published]
   push:
-    branches: [master,2022-08-12-force-dev]
-    # branches: [master]
+    branches: [master]
 
 jobs:
   deploy-dev-app:
     name: deploy the DEV app
-    # if:  github.event.push.merged == true
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-app.yml
     with:
