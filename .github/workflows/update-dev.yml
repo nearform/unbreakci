@@ -1,8 +1,6 @@
 name: Update dev
 
 on:
-  push:
-    branches: [master]
   workflow_call:
     inputs:
       env:
@@ -11,50 +9,15 @@ on:
 
 jobs:
   apply-infra:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - name: Applying iac on dev
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-     
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-      
-      - name: Terraform Format - dev
-        id: fmt
-        working-directory: ./infra/
-        run: terraform fmt -recursive -check -diff
-        continue-on-error: true
-
-      - name: GCP Authentication
-        uses: 'google-github-actions/auth@v0'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: ${{ secrets.GCP_PROVIDER_NAME }}
-          service_account: ${{ secrets.GCP_SA }}
-
-      - name: Initialize project
-        working-directory: ./infra/
-        run: terraform init -backend-config=env/dev/backend.hcl  -var-file=env/dev/dev.tfvars -reconfigure
-
-      - name: Terraform Plan - dev
-        working-directory: ./infra/
-        run: terraform plan -var-file=env/dev/dev.tfvars -out=tfplan
-
-      - name: Apply Infra - dev
-        working-directory: ./infra/
-        id: apply_infra
-        run: terraform apply -auto-approve tfplan
+    name: apply dev infra
+    uses: ./.github/workflows/iac-apply.yml
+    with:
+      env: dev
 
   deploy-app:
     name: deploy the dev app
     uses: ./.github/workflows/deploy-app.yml
+    needs: apply-infra
     with:
       env: dev
     secrets: inherit

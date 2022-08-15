@@ -1,20 +1,13 @@
 name: Apply Infrastructure
 
 on:
-  release:
-    types: [published]
-  push:
-    # branches: [master, 47-improve-application-deployment-approach]
-    branches: [master]
-
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
 jobs:
   apply-infra:
-    if: github.event_name == 'push'
-    with:
-      env: dev
-    if: github.event_name == 'release'
-    with:
-      env: prod
     runs-on: ubuntu-latest
     permissions:
       id-token: write
