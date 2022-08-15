@@ -54,16 +54,16 @@ jobs:
 
         - name: Update the GPC Webhook Secrets
           run: |
-            gcloud secrets versions list unbreak_${{ inputs.env }}_webhook_secret |  sed '1d' |awk '{print $1}' > versions_list_webhook
-            for i in $(cat versions_list_webhook) ; do gcloud secrets versions destroy $i --secret=unbreak_${{ inputs.env }}_webhook_secret --quiet ; done
             echo ${{ secrets.gcp_webhook_secret }} | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=-
+            gcloud secrets versions list unbreak_${{ inputs.env }}_webhook_secret |  sed '1d;2d' |awk '{print $1}' > versions_list_webhook
+            for i in $(cat versions_list_webhook) ; do gcloud secrets versions destroy $i --secret=unbreak_${{ inputs.env }}_webhook_secret --quiet ; done
+            
             
         - name: Update the GPC App Key Secrets
           run: |
-            gcloud secrets versions list unbreak_${{ inputs.env }}_app_key |  sed '1d' |awk '{print $1}' > versions_list_app
-            for i in $(cat versions_list_app) ; do gcloud secrets versions destroy $i --secret=unbreak_${{ inputs.env }}_app_key --quiet ; done
             echo "${{ secrets.gcp_app_key }}" | gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=-
-            
+            gcloud secrets versions list unbreak_${{ inputs.env }}_app_key |  sed '1d;2d' |awk '{print $1}' > versions_list_app
+            for i in $(cat versions_list_app) ; do gcloud secrets versions destroy $i --secret=unbreak_${{ inputs.env }}_app_key --quiet ; done            
 
         - name: Deploy Docker image
           uses: 'google-github-actions/deploy-cloudrun@v0'
