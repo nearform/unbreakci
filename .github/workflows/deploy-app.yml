@@ -52,10 +52,11 @@ jobs:
             workload_identity_provider: ${{ secrets.gcp_provider_name }}
             service_account: ${{ secrets.gcp_sa }}
 
-        - name: Update the GPC Secrets
-          run: | 
-            echo -n ${{ secrets.gcp_webhook_secret }} | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=-
-            echo -n ${{ secrets.gcp_app_key }} | gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=-
+        - name: Update the GPC Webhook Secrets
+          run: echo -n ${{ secrets.gcp_webhook_secret }} | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=- 
+
+        - name: Update the GPC App Key Secrets
+          run: echo -n ${{ secrets.gcp_app_key }} | gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=-
 
         - name: Deploy Docker image
           uses: 'google-github-actions/deploy-cloudrun@v0'
