@@ -56,7 +56,9 @@ jobs:
           run: printf ${{ secrets.gcp_webhook_secret }} | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=- 
 
         - name: Update the GPC App Key Secrets
-          run: printf ${{ secrets.gcp_app_key }} | gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=-
+          run: |
+            printf ${{ secrets.gcp_app_key }} > app_key.txt 
+            gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=app_key.txt
 
         - name: Deploy Docker image
           uses: 'google-github-actions/deploy-cloudrun@v0'
