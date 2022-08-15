@@ -1,0 +1,60 @@
+name: Update prod
+
+on:
+  release:
+    types: [published]
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+
+jobs:
+  apply-infra:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Applying iac on prod
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+     
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+      
+      - name: Terraform Format - prod
+        id: fmt
+        working-directory: ./infra/
+        run: terraform fmt -recursive -check -diff
+        continue-on-error: true
+
+      - name: GCP Authentication
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: ${{ secrets.GCP_PROVIDER_NAME }}
+          service_account: ${{ secrets.GCP_SA }}
+
+      - name: Initialize project
+        working-directory: ./infra/
+        run: terraform init -backend-config=env/prod/backend.hcl  -var-file=env/prod/prod.tfvars -reconfigure
+
+      - name: Terraform Plan - prod
+        working-directory: ./infra/
+        run: terraform plan -var-file=env/prod/prod.tfvars -out=tfplan
+
+      - name: Apply Infra - prod
+        working-directory: ./infra/
+        id: apply_infra
+        run: terraform apply -auto-approve tfplan
+
+  deploy-app:
+    name: deploy the prod app
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      env: prod
+    secrets: inherit

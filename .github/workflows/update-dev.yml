@@ -1,17 +1,22 @@
-name: Apply Infrastructure - DEV
+name: Update dev
 
 on:
   push:
     branches: [master]
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
 
 jobs:
-  apply-dev-infra:
+  apply-infra:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read 
+      contents: read
     steps:
-      - name: Applying iac on DEV
+      - name: Applying iac on dev
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
@@ -21,7 +26,7 @@ jobs:
         with:
           terraform_wrapper: false
       
-      - name: Terraform Format - DEV Environment
+      - name: Terraform Format - dev
         id: fmt
         working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
@@ -38,11 +43,18 @@ jobs:
         working-directory: ./infra/
         run: terraform init -backend-config=env/dev/backend.hcl  -var-file=env/dev/dev.tfvars -reconfigure
 
-      - name: Terraform Plan - DEV
+      - name: Terraform Plan - dev
         working-directory: ./infra/
         run: terraform plan -var-file=env/dev/dev.tfvars -out=tfplan
 
-      - name: Apply Infra - DEV
+      - name: Apply Infra - dev
         working-directory: ./infra/
         id: apply_infra
         run: terraform apply -auto-approve tfplan
+
+  deploy-app:
+    name: deploy the dev app
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      env: dev
+    secrets: inherit

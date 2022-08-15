@@ -1,4 +1,4 @@
-name: Continuous Delivery
+name: Update infra and deploy
 
 on:
   release:
@@ -7,10 +7,10 @@ on:
     branches: [master]
 
 jobs:
-  deploy-dev-app:
+  update-dev:
     name: deploy the DEV app
     if: github.event_name == 'push'
-    uses: ./.github/workflows/deploy-app.yml
+    uses: ./.github/workflows/update-dev.yml
     with:
       env: dev
     secrets:
@@ -22,10 +22,10 @@ jobs:
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-  deploy-prod-app:
+  update-prod:
     name: deploy the PROD app
     if: github.event_name == 'release'
-    uses: ./.github/workflows/deploy-app.yml
+    uses: ./.github/workflows/update-prod.yml
     with:
       env: prod
     secrets:

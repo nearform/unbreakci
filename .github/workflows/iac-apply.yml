@@ -1,17 +1,26 @@
-name: Apply Infrastructure - PROD
+name: Apply Infrastructure
 
 on:
   release:
     types: [published]
+  push:
+    # branches: [master, 47-improve-application-deployment-approach]
+    branches: [master]
 
-jobs:  
-  apply-prod-infra:
+jobs:
+  apply-infra:
+    if: github.event_name == 'push'
+    with:
+      env: dev
+    if: github.event_name == 'release'
+    with:
+      env: prod
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      contents: read 
     steps:
-      - name: Applying iac on ${{ inputs.environment }} ${{ inputs.region }} [${{ env.working_dir }}]
+      - name: Applying iac on ${{ inputs.env }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
@@ -21,8 +30,9 @@ jobs:
         with:
           terraform_wrapper: false
       
-      - name: Terraform Format - PROD Environment
+      - name: Terraform Format - ${{ inputs.env }} Environment
         id: fmt
+        working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
         continue-on-error: true
 
@@ -35,13 +45,13 @@ jobs:
 
       - name: Initialize project
         working-directory: ./infra/
-        run: terraform init -backend-config=env/prod/backend.hcl  -var-file=env/prod/prod.tfvars -reconfigure
+        run: terraform init -backend-config=env/${{ inputs.env }}/backend.hcl  -var-file=env/${{ inputs.env }}/${{ inputs.env }}.tfvars -reconfigure
 
-      - name: Terraform Plan - PROD
+      - name: Terraform Plan - ${{ inputs.env }}
         working-directory: ./infra/
-        run: terraform plan -var-file=env/prod/prod.tfvars -out=tfplan
+        run: terraform plan -var-file=env/${{ inputs.env }}/${{ inputs.env }}.tfvars -out=tfplan
 
-      - name: Apply Infra - PROD
+      - name: Apply Infra - ${{ inputs.env }}
         working-directory: ./infra/
         id: apply_infra
         run: terraform apply -auto-approve tfplan
