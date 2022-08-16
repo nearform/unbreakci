@@ -7,12 +7,19 @@ on:
     branches: [master,47-improve-application-deployment-approach]
 
 jobs:
-  update-dev:
-    name: deploy the DEV app
+
+  apply-infra-dev:
+    name: Update infra - Dev
     if: github.event_name == 'push'
-    uses: ./.github/workflows/update-environment.yml
-    with:
-      env: dev
+    uses: ./.github/workflows/apply-infra.yml
+    env: dev
+
+  deploy-app-dev:
+    name: deploy the app
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/deploy-app.yml
+    needs: apply-infra-dev
+    env: dev
     secrets:
       app_id_github: ${{ secrets.APP_ID_GITHUB }}
       pr_author: ${{ secrets.PR_AUTHOR }}
@@ -22,12 +29,18 @@ jobs:
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-  update-prod:
-    name: deploy the PROD app
+  apply-infra-prod:
+    name: Update infra - Prod
     if: github.event_name == 'release'
-    uses: ./.github/workflows/update-environment.yml
-    with:
-      env: prod
+    uses: ./.github/workflows/apply-infra.yml
+    env: prod
+
+  deploy-app-prod:
+    name: deploy the app
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/deploy-app.yml
+    needs: apply-infra-prod
+    env: prod
     secrets:
       app_id_github: ${{ secrets.APP_ID_GITHUB }}
       pr_author: ${{ secrets.PR_AUTHOR }}
