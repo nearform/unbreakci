@@ -10,9 +10,7 @@ jest.mock('../utils/octokit.js', () => ({
   removePrFromProject: jest.fn()
 }))
 
-const testServer = buildServer({
-  LOG_LEVEL: 'silent'
-})
+const testServer = buildServer()
 
 const defaultBody = {
   action: 'closed',

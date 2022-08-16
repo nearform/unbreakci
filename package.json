@@ -8,7 +8,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "lint": "eslint .",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "prepare": "npx husky install"
   },
   "repository": {

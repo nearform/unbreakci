@@ -2,9 +2,7 @@ import { expect } from '@jest/globals'
 import buildServer from '../server.js'
 import { getDefaultHeaders } from './utils.js'
 
-const testServer = buildServer({
-  LOG_LEVEL: 'silent'
-})
+const testServer = buildServer()
 
 describe('verifyRequest tests', () => {
   it('verifyRequest hook fails due to wrong secret provided', async () => {
