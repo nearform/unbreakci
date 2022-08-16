@@ -1,6 +1,7 @@
 name: Continuous Delivery
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
   push:
@@ -15,13 +16,8 @@ jobs:
     with:
       env: dev
     secrets:
-      app_id_github: ${{ secrets.APP_ID_GITHUB }}
-      pr_author: ${{ secrets.PR_AUTHOR }}
-      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_DEV }}
-      column_name: ${{ secrets.COLUMN_NAME_GITHUB_DEV }}
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
-      project_id: ${{ secrets.GCP_PROJECT_ID }}
 
   deploy-app-dev:
     name: deploy the app - Dev
@@ -46,13 +42,8 @@ jobs:
     with:
       env: prod
     secrets:
-      app_id_github: ${{ secrets.APP_ID_GITHUB }}
-      pr_author: ${{ secrets.PR_AUTHOR }}
-      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_PROD }}
-      column_name: ${{ secrets.COLUMN_NAME_GITHUB_PROD }}
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
-      project_id: ${{ secrets.GCP_PROJECT_ID }}
 
   deploy-app-prod:
     name: deploy the app - Prod

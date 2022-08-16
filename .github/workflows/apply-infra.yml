@@ -6,6 +6,11 @@ on:
       env:
         required: true
         type: string
+    secrets:
+      gcp_provider_name:
+        required: true
+      gcp_sa:
+        required: true
 jobs:
   apply-infra:
     runs-on: ubuntu-latest
