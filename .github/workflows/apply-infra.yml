@@ -1,17 +1,24 @@
-name: Apply Infrastructure - DEV
+name: Apply Infrastructure
 
 on:
-  push:
-    branches: [master]
-
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+    secrets:
+      gcp_provider_name:
+        required: true
+      gcp_sa:
+        required: true
 jobs:
-  apply-dev-infra:
+  apply-infra:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read 
     steps:
-      - name: Applying iac on DEV
+      - name: Applying iac on ${{ inputs.env }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
@@ -21,7 +28,7 @@ jobs:
         with:
           terraform_wrapper: false
       
-      - name: Terraform Format - DEV Environment
+      - name: Terraform Format - ${{ inputs.env }} Environment
         id: fmt
         working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
@@ -36,13 +43,13 @@ jobs:
 
       - name: Initialize project
         working-directory: ./infra/
-        run: terraform init -backend-config=env/dev/backend.hcl  -var-file=env/dev/dev.tfvars -reconfigure
+        run: terraform init -backend-config=env/${{ inputs.env }}/backend.hcl  -var-file=env/${{ inputs.env }}/${{ inputs.env }}.tfvars -reconfigure
 
-      - name: Terraform Plan - DEV
+      - name: Terraform Plan - ${{ inputs.env }}
         working-directory: ./infra/
-        run: terraform plan -var-file=env/dev/dev.tfvars -out=tfplan
+        run: terraform plan -var-file=env/${{ inputs.env }}/${{ inputs.env }}.tfvars -out=tfplan
 
-      - name: Apply Infra - DEV
+      - name: Apply Infra - ${{ inputs.env }}
         working-directory: ./infra/
         id: apply_infra
         run: terraform apply -auto-approve tfplan

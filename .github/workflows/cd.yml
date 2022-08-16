@@ -7,10 +7,22 @@ on:
     branches: [master]
 
 jobs:
-  deploy-dev-app:
-    name: deploy the DEV app
+
+  apply-infra-dev:
+    name: Update infra - Dev
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/apply-infra.yml
+    with:
+      env: dev
+    secrets:
+      gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
+      gcp_sa: ${{ secrets.GCP_SA }}
+
+  deploy-app-dev:
+    name: deploy the app - Dev
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-app.yml
+    needs: apply-infra-dev
     with:
       env: dev
     secrets:
@@ -24,10 +36,21 @@ jobs:
       gcp_app_key: ${{ secrets.GCP_APP_KEY_DEV }}
       gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_DEV }}
 
-  deploy-prod-app:
-    name: deploy the PROD app
+  apply-infra-prod:
+    name: Update infra - Prod
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/apply-infra.yml
+    with:
+      env: prod
+    secrets:
+      gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
+      gcp_sa: ${{ secrets.GCP_SA }}
+
+  deploy-app-prod:
+    name: deploy the app - Prod
     if: github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
+    needs: apply-infra-prod
     with:
       env: prod
     secrets:
