@@ -10,7 +10,7 @@ jobs:
   update-dev:
     name: deploy the DEV app
     if: github.event_name == 'push'
-    uses: ./.github/workflows/update-dev.yml
+    uses: ./.github/workflows/update-environment.yml
     with:
       env: dev
     secrets:
@@ -25,7 +25,7 @@ jobs:
   update-prod:
     name: deploy the PROD app
     if: github.event_name == 'release'
-    uses: ./.github/workflows/update-prod.yml
+    uses: ./.github/workflows/update-environment.yml
     with:
       env: prod
     secrets:

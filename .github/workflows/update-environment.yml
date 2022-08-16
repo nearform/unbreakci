@@ -1,4 +1,4 @@
-name: Update prod
+name: Update environment - infra and deployment
 
 on:
   workflow_call:
@@ -9,15 +9,11 @@ on:
 
 jobs:
   apply-infra:
-    name: apply prod infra
+    name: Update infra
     uses: ./.github/workflows/iac-apply.yml
-    with:
-      env: prod
 
   deploy-app:
-    name: deploy the prod app
+    name: deploy the app
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra
-    with:
-      env: prod
     secrets: inherit
