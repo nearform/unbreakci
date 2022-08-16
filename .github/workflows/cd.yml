@@ -1,11 +1,10 @@
 name: Continuous Delivery
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
   push:
-    branches: [master,47-improve-application-deployment-approach]
+    branches: [master]
 
 jobs:
 
