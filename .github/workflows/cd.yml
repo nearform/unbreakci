@@ -16,7 +16,7 @@ jobs:
       env: dev
 
   deploy-app-dev:
-    name: deploy the app
+    name: deploy the app - Dev
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra-dev
@@ -39,7 +39,7 @@ jobs:
       env: prod
 
   deploy-app-prod:
-    name: deploy the app
+    name: deploy the app - Prod
     if: github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra-prod
