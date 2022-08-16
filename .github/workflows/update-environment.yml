@@ -11,9 +11,11 @@ jobs:
   apply-infra:
     name: Update infra
     uses: ./.github/workflows/apply-infra.yml
+    env: ${{ inputs.env }}
 
   deploy-app:
     name: deploy the app
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra
+    env: ${{ inputs.env }}
     secrets: inherit
