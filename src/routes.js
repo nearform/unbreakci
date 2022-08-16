@@ -17,6 +17,10 @@ export default async function appRoutes(fastify) {
         await moveFailingPrToProjectBoard(req)
         return
       }
+
+      req.log.warn(
+        `Webhook call does not contain "pull_request" or "check_suite" events. Nothing to do.`
+      )
     }
   })
 }
