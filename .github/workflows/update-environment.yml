@@ -10,7 +10,7 @@ on:
 jobs:
   apply-infra:
     name: Update infra
-    uses: ./.github/workflows/iac-apply.yml
+    uses: ./.github/workflows/apply-infra.yml
 
   deploy-app:
     name: deploy the app
