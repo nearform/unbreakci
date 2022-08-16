@@ -46,7 +46,7 @@ export default async function removeClosedPrFromProjectBoard(req) {
         itemId: pullRequestProjectItems[0].id
       })
 
-      req.log.warn(
+      req.log.info(
         `Pull request number ${pull_request.number} from ${pull_request.head.repo.name} has been removed from project number ${config.PROJECT_NUMBER} board.`
       )
     }

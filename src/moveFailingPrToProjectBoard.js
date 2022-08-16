@@ -29,7 +29,7 @@ export default async function moveFailingPrToProjectBoard(req) {
   const successfulCheckSuite = conclusion === 'success'
 
   if (incompleteCheckSuite || successfulCheckSuite) {
-    req.log.warn(
+    req.log.info(
       `Returning due to incomplete or successful check suite(id: ${check_suite.id}) from ${repositoryName}.`
     )
     return
@@ -66,7 +66,7 @@ export default async function moveFailingPrToProjectBoard(req) {
       contentId: pullRequest.id
     })
 
-    req.log.warn(
+    req.log.info(
       `Broken ${config.PR_AUTHOR} PR number ${pr.number} from ${repositoryName} has been found and added to project number ${config.PROJECT_NUMBER} board.`
     )
 
@@ -89,7 +89,7 @@ export default async function moveFailingPrToProjectBoard(req) {
       fieldId: projectV2.field?.id
     })
 
-    req.log.warn(
+    req.log.info(
       `Broken ${config.PR_AUTHOR} PR number ${pr.number} from ${repositoryName} has been moved to ${config.COLUMN_NAME} column.`
     )
   }

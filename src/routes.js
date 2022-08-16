@@ -18,7 +18,7 @@ export default async function appRoutes(fastify) {
         return
       }
 
-      req.log.warn(
+      req.log.info(
         `Webhook call does not contain "pull_request" or "check_suite" events. Nothing to do.`
       )
     }
