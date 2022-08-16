@@ -95,7 +95,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.info(
       `Broken ${config.PR_AUTHOR} PR number ${pr.number} from ${repositoryName} has been moved to ${config.COLUMN_NAME} column.`
     )
-
-    return { status: 200 }
   }
+
+  return { status: 200 }
 }
