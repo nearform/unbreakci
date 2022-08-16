@@ -18,7 +18,8 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.warn(
       `No pull requests associated with check suite(id: ${check_suite.id}) from ${repositoryName} were found.`
     )
-    return
+
+    return { status: 200 }
   }
 
   const installationToken = await getInstallationToken({
@@ -32,7 +33,8 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.info(
       `Returning due to incomplete or successful check suite(id: ${check_suite.id}) from ${repositoryName}.`
     )
-    return
+
+    return { status: 200 }
   }
 
   for (const pr of pullRequests) {
@@ -78,7 +80,8 @@ export default async function moveFailingPrToProjectBoard(req) {
       req.log.warn(
         `Board column with name "${config.COLUMN_NAME}" not found. Please check "COLUMN_NAME" environment variable.`
       )
-      return
+
+      return { status: 200 }
     }
 
     await moveCardToProjectColumn({
@@ -92,5 +95,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.info(
       `Broken ${config.PR_AUTHOR} PR number ${pr.number} from ${repositoryName} has been moved to ${config.COLUMN_NAME} column.`
     )
+
+    return { status: 200 }
   }
 }

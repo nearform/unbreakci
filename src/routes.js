@@ -9,18 +9,18 @@ export default async function appRoutes(fastify) {
       const { check_suite, pull_request } = req.body
 
       if (pull_request) {
-        await removeClosedPrFromProjectBoard(req)
-        return
+        return await removeClosedPrFromProjectBoard(req)
       }
 
       if (check_suite) {
-        await moveFailingPrToProjectBoard(req)
-        return
+        return await moveFailingPrToProjectBoard(req)
       }
 
       req.log.info(
         `Webhook call does not contain "pull_request" or "check_suite" events. Nothing to do.`
       )
+
+      return { status: 200 }
     }
   })
 }
