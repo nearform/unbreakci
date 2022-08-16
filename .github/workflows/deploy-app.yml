@@ -54,7 +54,7 @@ jobs:
 
         - name: Update the GPC Webhook Secrets
           run: |
-            echo ${{ secrets.gcp_webhook_secret }} | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=-
+            echo -n "${{ secrets.gcp_webhook_secret }}" | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=-
                        
             
         - name: Update the GPC App Key Secrets
