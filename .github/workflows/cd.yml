@@ -33,6 +33,8 @@ jobs:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
+      gcp_app_key: ${{ secrets.GCP_APP_KEY_DEV }}
+      gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_DEV }}
 
   apply-infra-prod:
     name: Update infra - Prod
@@ -59,3 +61,5 @@ jobs:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
+      gcp_app_key: ${{ secrets.GCP_APP_KEY_PROD }}
+      gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}
