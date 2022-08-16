@@ -1,4 +1,4 @@
-name: Update infra and deploy
+name: Continuous Delivery
 
 on:
   release:
