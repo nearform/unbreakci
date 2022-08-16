@@ -12,14 +12,16 @@ jobs:
     name: Update infra - Dev
     if: github.event_name == 'push'
     uses: ./.github/workflows/apply-infra.yml
-    env: dev
+    with:
+      env: dev
 
   deploy-app-dev:
     name: deploy the app
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra-dev
-    env: dev
+    with:
+      env: dev
     secrets:
       app_id_github: ${{ secrets.APP_ID_GITHUB }}
       pr_author: ${{ secrets.PR_AUTHOR }}
@@ -33,14 +35,16 @@ jobs:
     name: Update infra - Prod
     if: github.event_name == 'release'
     uses: ./.github/workflows/apply-infra.yml
-    env: prod
+    with:
+      env: prod
 
   deploy-app-prod:
     name: deploy the app
     if: github.event_name == 'release'
     uses: ./.github/workflows/deploy-app.yml
     needs: apply-infra-prod
-    env: prod
+    with:
+      env: prod
     secrets:
       app_id_github: ${{ secrets.APP_ID_GITHUB }}
       pr_author: ${{ secrets.PR_AUTHOR }}
