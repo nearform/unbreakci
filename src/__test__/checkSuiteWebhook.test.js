@@ -120,7 +120,11 @@ describe('Check Suite Webhook tests', () => {
       body
     })
 
-    expect(addPrToProject).toHaveBeenCalled()
+    expect(addPrToProject).toHaveBeenCalledWith({
+      contentId: 1234,
+      installationToken: 'token',
+      projectId: 1234
+    })
     expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
@@ -134,7 +138,17 @@ describe('Check Suite Webhook tests', () => {
       body
     })
 
-    expect(addPrToProject).toHaveBeenCalled()
-    expect(moveCardToProjectColumn).toHaveBeenCalled()
+    expect(addPrToProject).toHaveBeenCalledWith({
+      contentId: 1234,
+      installationToken: 'token',
+      projectId: 1234
+    })
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 1234,
+      fieldId: 1234,
+      installationToken: 'token',
+      itemId: 1234,
+      projectId: 1234
+    })
   })
 })

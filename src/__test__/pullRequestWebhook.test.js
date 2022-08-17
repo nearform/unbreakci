@@ -5,8 +5,8 @@ import { getDefaultHeaders } from './utils.js'
 
 jest.mock('../utils/octokit.js', () => ({
   getInstallationToken: async () => 'token',
-  getProjectV2Id: jest.fn(),
-  getPullRequestProjectItems: () => [{ id: 123 }],
+  getProjectV2Id: async () => 1234,
+  getPullRequestProjectItems: () => [{ id: 1234 }],
   removePrFromProject: jest.fn()
 }))
 
@@ -55,6 +55,10 @@ describe('Pull Requests Webhook tests', () => {
       body
     })
 
-    expect(removePrFromProject).toHaveBeenCalled()
+    expect(removePrFromProject).toHaveBeenCalledWith({
+      installationToken: 'token',
+      itemId: 1234,
+      projectId: 1234
+    })
   })
 })
