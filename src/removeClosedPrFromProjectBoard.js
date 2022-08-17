@@ -51,6 +51,4 @@ export default async function removeClosedPrFromProjectBoard(req) {
       )
     }
   }
-
-  return { status: 200 }
 }

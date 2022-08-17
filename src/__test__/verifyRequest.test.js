@@ -1,4 +1,3 @@
-import { expect } from '@jest/globals'
 import buildServer from '../server.js'
 import { getDefaultHeaders } from './utils.js'
 

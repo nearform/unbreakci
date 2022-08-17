@@ -19,7 +19,7 @@ jest.mock('../utils/octokit.js', () => ({
       },
       projectV2: {
         id: 1234,
-        field: { id: 1234, options: [{ name: 'unbreakci', id: 123 }] }
+        field: { id: 1234, options: [{ name: 'unbreakci', id: 1234 }] }
       }
     }
   }),
