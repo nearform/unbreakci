@@ -9,12 +9,12 @@ export default async function appRoutes(fastify) {
       const { check_suite, pull_request } = req.body
 
       if (pull_request) {
-        removeClosedPrFromProjectBoard(req)
+        await removeClosedPrFromProjectBoard(req)
         return { status: 200 }
       }
 
       if (check_suite) {
-        moveFailingPrToProjectBoard(req)
+        await moveFailingPrToProjectBoard(req)
         return { status: 200 }
       }
 

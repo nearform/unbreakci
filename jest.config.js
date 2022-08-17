@@ -2,16 +2,15 @@ export default {
   setupFiles: ['./.jest/env.js'],
   clearMocks: true,
   collectCoverage: true,
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: -10
-    }
-  },
   transform: {
     '^.+\\.js$': 'babel-jest'
+  },
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100
+    }
   }
-  // collectCoverageFrom: ['src/**/{!(octokit),}.js']
 }

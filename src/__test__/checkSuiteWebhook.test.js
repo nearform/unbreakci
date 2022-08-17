@@ -29,7 +29,7 @@ jest.mock('../utils/octokit.js', () => ({
 const testServer = buildServer()
 
 const defaultBody = {
-  action: 'closed',
+  action: 'completed',
   installation: { id: 123 },
   repository: { owner: { login: 'owner' }, name: 'repositoy_name' },
   check_suite: {
