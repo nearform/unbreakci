@@ -1,12 +1,16 @@
 import buildServer from '../server.js'
 
-import { removePrFromProject } from '../utils/octokit.js'
+// import octokit from '../utils/octokit.js'
+import {
+  getPullRequestProjectItems,
+  removePrFromProject
+} from '../utils/octokit.js'
 import { getDefaultHeaders } from './utils.js'
 
 jest.mock('../utils/octokit.js', () => ({
   getInstallationToken: async () => 'token',
   getProjectV2Id: async () => 1234,
-  getPullRequestProjectItems: () => [{ id: 1234 }],
+  getPullRequestProjectItems: jest.fn(() => [{ id: 1234 }]),
   removePrFromProject: jest.fn()
 }))
 
@@ -60,5 +64,20 @@ describe('Pull Requests Webhook tests', () => {
       itemId: 1234,
       projectId: 1234
     })
+  })
+
+  it('returns if no pull request project items are found', async () => {
+    const body = JSON.stringify(defaultBody)
+
+    getPullRequestProjectItems.mockResolvedValue([])
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(removePrFromProject).not.toHaveBeenCalled()
   })
 })
