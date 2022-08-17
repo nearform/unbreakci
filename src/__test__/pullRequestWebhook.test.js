@@ -1,6 +1,5 @@
 import buildServer from '../server.js'
 
-// import octokit from '../utils/octokit.js'
 import {
   getPullRequestProjectItems,
   removePrFromProject
@@ -17,7 +16,6 @@ jest.mock('../utils/octokit.js', () => ({
 const testServer = buildServer()
 
 const defaultBody = {
-  action: 'closed',
   installation: { id: 123 },
   repository: { owner: { login: 'owner' } },
   pull_request: {
@@ -35,6 +33,7 @@ describe('Pull Requests Webhook tests', () => {
   it('does not remove project from board if it is already been merged', async () => {
     const body = JSON.stringify({
       ...defaultBody,
+      action: 'closed',
       pull_request: { ...defaultBody.pull_request, merged: true }
     })
 
@@ -50,7 +49,7 @@ describe('Pull Requests Webhook tests', () => {
   })
 
   it('removes closed unmerged project from the board', async () => {
-    const body = JSON.stringify(defaultBody)
+    const body = JSON.stringify({ ...defaultBody, action: 'closed' })
 
     await testServer.inject({
       method: 'POST',
@@ -67,7 +66,7 @@ describe('Pull Requests Webhook tests', () => {
   })
 
   it('returns if no pull request project items are found', async () => {
-    const body = JSON.stringify(defaultBody)
+    const body = JSON.stringify({ ...defaultBody, action: 'closed' })
 
     getPullRequestProjectItems.mockResolvedValue([])
 

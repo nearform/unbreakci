@@ -12,6 +12,6 @@ export default {
   },
   transform: {
     '^.+\\.js$': 'babel-jest'
-  },
-  collectCoverageFrom: ['src/**/{!(octokit),}.js']
+  }
+  // collectCoverageFrom: ['src/**/{!(octokit),}.js']
 }
