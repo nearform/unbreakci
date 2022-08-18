@@ -18,6 +18,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.warn(
       `No pull requests associated with check suite(id: ${check_suite.id}) from ${repositoryName} were found.`
     )
+
     return
   }
 
@@ -32,6 +33,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     req.log.info(
       `Returning due to incomplete or successful check suite(id: ${check_suite.id}) from ${repositoryName}.`
     )
+
     return
   }
 
@@ -78,6 +80,7 @@ export default async function moveFailingPrToProjectBoard(req) {
       req.log.warn(
         `Board column with name "${config.COLUMN_NAME}" not found. Please check "COLUMN_NAME" environment variable.`
       )
+
       return
     }
 

@@ -10,17 +10,19 @@ export default async function appRoutes(fastify) {
 
       if (pull_request) {
         await removeClosedPrFromProjectBoard(req)
-        return
+        return {}
       }
 
       if (check_suite) {
         await moveFailingPrToProjectBoard(req)
-        return
+        return {}
       }
 
       req.log.info(
         `Webhook call does not contain "pull_request" or "check_suite" events. Nothing to do.`
       )
+
+      return {}
     }
   })
 }
