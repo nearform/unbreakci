@@ -10,19 +10,19 @@ export default async function appRoutes(fastify) {
 
       if (pull_request) {
         await removeClosedPrFromProjectBoard(req)
-        return { status: 200 }
+        return {}
       }
 
       if (check_suite) {
         await moveFailingPrToProjectBoard(req)
-        return { status: 200 }
+        return {}
       }
 
       req.log.info(
         `Webhook call does not contain "pull_request" or "check_suite" events. Nothing to do.`
       )
 
-      return { status: 200 }
+      return {}
     }
   })
 }

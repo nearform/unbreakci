@@ -5,6 +5,20 @@ import { getDefaultHeaders } from './utils.js'
 
 import config from '../../config.js'
 
+jest.mock('../../config.js', () => ({
+  __esModule: true,
+  default: {
+    PORT: 3000,
+    APP_ID: 1234,
+    APP_KEY: 'key',
+    WEBHOOK_SECRET: 'secret',
+    PR_AUTHOR: 'dependabot',
+    PROJECT_NUMBER: 1,
+    COLUMN_NAME: 'unbreakci',
+    LOG_LEVEL: 'silent'
+  }
+}))
+
 jest.mock('../utils/octokit.js', () => ({
   getInstallationToken: async () => 'token',
   addPrToProject: jest.fn(async () => ({
@@ -40,15 +54,11 @@ const defaultBody = {
 }
 
 describe('Check Suite Webhook tests', () => {
-  const originalConfig = { ...config }
-
-  afterAll(() => {
+  afterEach(() => {
     jest.clearAllMocks()
-  })
 
-  beforeEach(() => {
-    config.PR_AUTHOR = originalConfig.PR_AUTHOR
-    config.COLUMN_NAME = originalConfig.COLUMN_NAME
+    config.PR_AUTHOR = 'dependabot'
+    config.COLUMN_NAME = 'unbreakci'
   })
 
   it('returns if no pullRequest associated to check suite', async () => {
