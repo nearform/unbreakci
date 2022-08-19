@@ -6,6 +6,19 @@ on:
   pull_request:
 
 jobs:
+  test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - run: |
+          npm ci
+          npm run lint
+          npm test
+
   test-infra:
     name: Test terraform code
     runs-on: ubuntu-latest
@@ -29,22 +42,10 @@ jobs:
         working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
         continue-on-error: true
-  test:
-    name: Lint and test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - run: |
-          npm ci
-          npm run lint
-          npm test
 
   automerge:
     name: Merge dependabot's PRs
-    needs: test
+    needs: [test, test-infra]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
