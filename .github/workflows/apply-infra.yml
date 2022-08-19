@@ -33,7 +33,7 @@ jobs:
         id: fmt
         working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
-        continue-on-error: false
+        continue-on-error: true
 
       - name: GCP Authentication
         uses: 'google-github-actions/auth@v0'
