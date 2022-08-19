@@ -9,6 +9,5 @@ variable "secrets" {
     id   = string
     size = number
   }))
-  default     = ""
   description = "List of secrets"
 }

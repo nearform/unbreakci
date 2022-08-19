@@ -26,7 +26,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_region"></a> [region](#input\_region) | GCP region | `string` | `""` | yes |
-| <a name="input_secrets"></a> [secrets](#input\_secrets) | List of secrets | <pre>list(object({<br>    id   = string<br>    size = number<br>  }))</pre> | `""` | yes |
+| <a name="input_secrets"></a> [secrets](#input\_secrets) | List of secrets | <pre>list(object({<br>    id   = string<br>    size = number<br>  }))</pre> | n/a | yes |
 
 ## Outputs
 
