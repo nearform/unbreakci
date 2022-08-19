@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [master, fix-terraform-lint]
+    branches: [master]
 
 jobs:
 

@@ -2,7 +2,7 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [master, fix-terraform-lint]
+    branches: [master]
   pull_request:
 
 jobs:
