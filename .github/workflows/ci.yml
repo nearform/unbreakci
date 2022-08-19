@@ -2,10 +2,33 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [master]
+    branches: [master, fix-terraform-lint]
   pull_request:
 
 jobs:
+  test-infra:
+    name: Test terraform code
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read 
+    steps:
+      - name: Checkout terraform code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+     
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.7
+          terraform_wrapper: false
+      
+      - name: Terraform Format
+        id: fmt
+        working-directory: ./infra/
+        run: terraform fmt -recursive -check -diff
+        continue-on-error: true
   test:
     name: Lint and test
     runs-on: ubuntu-latest
