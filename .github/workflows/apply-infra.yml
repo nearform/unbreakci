@@ -26,13 +26,14 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
+          terraform_version: 1.2.7
           terraform_wrapper: false
       
       - name: Terraform Format - ${{ inputs.env }} Environment
         id: fmt
         working-directory: ./infra/
         run: terraform fmt -recursive -check -diff
-        continue-on-error: true
+        continue-on-error: false
 
       - name: GCP Authentication
         uses: 'google-github-actions/auth@v0'

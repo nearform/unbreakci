@@ -14,6 +14,12 @@
 - UnbreakCI runs using Terraform and GCP Cloud Run
 - The Cloud Run environment is created by the pipelines and uses the `google-github-actions/deploy-cloudrun@v0` plugin. The first time the pipeline runs, it creates the environment, and the next time it updates the docker image
 
+## Infra Diagram
+![Alt text](/diagrams/unbreakci_infra.png "")
+
+## Github Actions workflow strategy
+![Alt text](/diagrams/unbreakci_workflows.png "")
+
 ## Setup
 
 ### Github App
@@ -35,6 +41,10 @@
   - `PROJECT_NUMBER_GITHUB_DEV`: The Github board Number (Development environment)
   - `PROJECT_NUMBER_GITHUB_PROD`: The Github board Number (Production environment)
   - `WEBHOOK_SECRET`: Secret password that validates the webhook requests
+  - `GCP_APP_KEY_DEV`: Private key generated on the App creation (workflow usage - Development Environment)
+  - `GCP_WEBHOOK_SECRET_DEV`: Secret password that validates the webhook requests (workflow usage - Development Environment)
+  - `GCP_APP_KEY_PROD`: Private key generated on the App creation (workflow usage - Production Environment)
+  - `GCP_WEBHOOK_SECRET_PROD`: Secret password that validates the webhook requests (workflow usage - Production Environment)
 
 (If no column name is supplied, the PR will be moved to a temporary "No Status" column);
 
