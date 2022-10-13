@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@octokit/auth-app": "^4.0.7",
-    "@octokit/graphql": "^5.0.1",
+    "@octokit/graphql": "^5.0.2",
     "env-schema": "^5.1.0",
     "fastify": "^4.8.1",
     "fluent-json-schema": "^4.0.0",
