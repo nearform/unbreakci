@@ -42,7 +42,7 @@
   "dependencies": {
     "@octokit/auth-app": "^4.0.7",
     "@octokit/graphql": "^5.0.4",
-    "env-schema": "^5.1.0",
+    "env-schema": "^5.1.1",
     "fastify": "^4.9.2",
     "fluent-json-schema": "^4.0.0",
     "http-errors": "^2.0.0"
