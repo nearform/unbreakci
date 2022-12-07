@@ -1,6 +1,7 @@
 # UnbreakCI
 
 ![CI](https://github.com/nearform/bench-template/actions/workflows/ci.yml/badge.svg?event=push)
+[![Continuous Delivery](https://github.com/nearform/unbreakci/actions/workflows/cd.yml/badge.svg)](https://github.com/nearform/unbreakci/actions/workflows/cd.yml)
 
 ## What does it do?
 
