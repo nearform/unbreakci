@@ -19,9 +19,9 @@ jobs:
       project_number: ${{ vars.PROJECT_NUMBER_PROD }}
       column_name: ${{ vars.COLUMN_NAME_PROD }}
       webhook_path: webhook-prod
-      gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
     secrets:
-      gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
-      gcp_sa: ${{ secrets.GCP_SA }}
       gcp_app_key: ${{ secrets.GCP_APP_KEY_PROD }}
       gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}

@@ -6,6 +6,15 @@ on:
       env:
         required: true
         type: string
+      GCP_PROJECT_ID:
+        required: true
+        type: string
+      GCP_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
+        type: string
+      GCP_SERVICE_ACCOUNT:
+        required: true
+        type: string
       app_id_github:
         required: true
         type: string
@@ -19,9 +28,6 @@ on:
         required: true
         type: string
       webhook_path:
-        required: true
-        type: string
-      gcp_project_id:
         required: true
         type: string
 
@@ -51,13 +57,16 @@ jobs:
           with:
             ref: ${{ github.head_ref }}
 
-        - name: GCP Authentication
-          id: auth
-          uses: 'google-github-actions/auth@v1'
+        - name: 'Authenticate with GCP'
+          uses: google-github-actions/auth@v1
           with:
-            token_format: 'access_token'
-            workload_identity_provider: ${{ secrets.gcp_provider_name }}
-            service_account: ${{ secrets.gcp_sa }}
+            workload_identity_provider: ${{ inputs.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+            service_account: ${{ inputs.GCP_SERVICE_ACCOUNT }}
+
+        - name: 'Set up Cloud SDK'
+          uses: google-github-actions/setup-gcloud@v1
+          with:
+            project_id: ${{ inputs.GCP_PROJECT_ID }}
 
         - name: Update secrets in GCP Secret Manager
           uses: nearform-actions/github-action-gcp-secrets@v1
@@ -70,12 +79,11 @@ jobs:
           id: deploy-webhook
           run: >-
             gcloud functions deploy ${{ inputs.webhook_path }}
-            --project="${{ inputs.gcp_project_id }}"
             --runtime=nodejs18
             --source=.
             --entry-point=webhook
-            --set-secrets=APP_KEY=projects/${{ inputs.gcp_project_id }}/secrets/unbreak_${{ inputs.env }}_app_key:latest
-            --set-secrets=WEBHOOK_SECRET=projects/${{ inputs.gcp_project_id }}/secrets/unbreak_${{ inputs.env }}_webhook_secret:latest
+            --set-secrets=APP_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_app_key:latest
+            --set-secrets=WEBHOOK_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_webhook_secret:latest
             --set-env-vars=APP_ID="${{ inputs.APP_ID_GITHUB  }}"
             --set-env-vars=PR_AUTHOR="${{ inputs.pr_author }}"
             --set-env-vars=PROJECT_NUMBER="${{ inputs.project_number }}"
