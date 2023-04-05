@@ -1,8 +1,6 @@
 name: Continuous Delivery
 
 on:
-  release:
-    types: [published]
   push:
     branches:
       - master
@@ -14,10 +12,10 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: dev
-      app_id_github: ${{ secrets.APP_ID_DEV }}
-      pr_author: ${{ secrets.PR_AUTHOR }}
-      project_number: ${{ secrets.PROJECT_NUMBER_DEV }}
-      column_name: ${{ secrets.COLUMN_NAME_DEV }}
+      app_id_github: ${{ vars.APP_ID_DEV }}
+      pr_author: ${{ vars.PR_AUTHOR }}
+      project_number: ${{ vars.PROJECT_NUMBER_DEV }}
+      column_name: ${{ vars.COLUMN_NAME_DEV }}
       webhook_path: webhook-dev
       gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
     secrets:
