@@ -1,6 +1,6 @@
 'use strict'
 
-const http = require('http')
+import http from 'http'
 
 import buildServer from './src/server.js'
 
