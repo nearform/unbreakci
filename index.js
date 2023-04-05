@@ -21,8 +21,6 @@ app.addContentTypeParser('application/json', {}, (req, body, done) => {
 })
 
 export const webhook = (req, res) => {
-  console.log('REQUEST')
-  console.log(req)
   app.ready(err => {
     if (err) throw err
     handleRequest(req, res)
