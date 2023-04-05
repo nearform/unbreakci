@@ -32,10 +32,6 @@ on:
         type: string
 
     secrets:
-      gcp_provider_name:
-        required: true
-      gcp_sa:
-        required: true
       gcp_webhook_secret:
         required: true
       gcp_app_key:
