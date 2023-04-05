@@ -25,11 +25,13 @@ jobs:
     needs: apply-infra-dev
     with:
       env: dev
-    secrets:
-      app_id_github: ${{ secrets.APP_ID_GITHUB }}
+      app_id_github: ${{ secrets.APP_ID_DEV }}
       pr_author: ${{ secrets.PR_AUTHOR }}
-      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_DEV }}
-      column_name: ${{ secrets.COLUMN_NAME_GITHUB_DEV }}
+      project_number: ${{ secrets.PROJECT_NUMBER_DEV }}
+      column_name: ${{ secrets.COLUMN_NAME_DEV }}
+      webhook_path: webhook-dev
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
+    secrets:
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
       project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -53,13 +55,14 @@ jobs:
     needs: apply-infra-prod
     with:
       env: prod
+      app_id_github: ${{ vars.APP_ID_PROD }}
+      pr_author: ${{ vars.PR_AUTHOR }}
+      project_number: ${{ vars.PROJECT_NUMBER_PROD }}
+      column_name: ${{ vars.COLUMN_NAME_PROD }}
+      webhook_path: webhook-prod
+      gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
     secrets:
-      app_id_github: ${{ secrets.APP_ID_GITHUB }}
-      pr_author: ${{ secrets.PR_AUTHOR }}
-      project_number: ${{ secrets.PROJECT_NUMBER_GITHUB_PROD }}
-      column_name: ${{ secrets.COLUMN_NAME_GITHUB_PROD }}
       gcp_provider_name: ${{ secrets.GCP_PROVIDER_NAME }}
       gcp_sa: ${{ secrets.GCP_SA }}
-      project_id: ${{ secrets.GCP_PROJECT_ID }}
       gcp_app_key: ${{ secrets.GCP_APP_KEY_PROD }}
       gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}
