@@ -14,14 +14,14 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       env: prod
-      app_id_github: ${{ vars.APP_ID_PROD }}
-      pr_author: ${{ vars.PR_AUTHOR }}
-      project_number: ${{ vars.PROJECT_NUMBER_PROD }}
-      column_name: ${{ vars.COLUMN_NAME_PROD }}
+      APP_ID_GITHUB: ${{ vars.APP_ID_PROD }}
+      PR_AUTHOR: ${{ vars.PR_AUTHOR }}
+      PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER_PROD }}
+      COLUMN_NAME: ${{ vars.COLUMN_NAME_PROD }}
       webhook_path: webhook-prod
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
     secrets:
-      gcp_app_key: ${{ secrets.GCP_APP_KEY_PROD }}
-      gcp_webhook_secret: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}
+      GCP_APP_KEY: ${{ secrets.GCP_APP_KEY_PROD }}
+      GCP_WEBHOOK_SECRET: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}

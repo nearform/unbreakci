@@ -15,16 +15,16 @@ on:
       GCP_SERVICE_ACCOUNT:
         required: true
         type: string
-      app_id_github:
+      APP_ID_GITHUB:
         required: true
         type: string
-      pr_author:
+      PR_AUTHOR:
         required: true
         type: string
-      project_number:
+      PROJECT_NUMBER:
         required: true
         type: string
-      column_name:
+      COLUMN_NAME:
         required: true
         type: string
       webhook_path:
@@ -68,8 +68,8 @@ jobs:
           uses: nearform-actions/github-action-gcp-secrets@v1
           with:
             secrets: |-
-              unbreak_${{ inputs.env }}_webhook_secret:"${{ secrets.gcp_webhook_secret }}"
-              unbreak_${{ inputs.env }}_app_key:"${{ secrets.gcp_app_key }}"
+              unbreak_${{ inputs.env }}_webhook_secret:"${{ secrets.GCP_WEBHOOK_SECRET }}"
+              unbreak_${{ inputs.env }}_app_key:"${{ secrets.GCP_APP_KEY }}"
 
         - name: 'Deploy webhook to Cloud Run'
           id: deploy-webhook
@@ -81,9 +81,9 @@ jobs:
             --set-secrets=APP_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_app_key:latest
             --set-secrets=WEBHOOK_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_webhook_secret:latest
             --set-env-vars=APP_ID="${{ inputs.APP_ID_GITHUB  }}"
-            --set-env-vars=PR_AUTHOR="${{ inputs.pr_author }}"
-            --set-env-vars=PROJECT_NUMBER="${{ inputs.project_number }}"
-            --set-env-vars=COLUMN_NAME="${{ inputs.column_name }}"
+            --set-env-vars=PR_AUTHOR="${{ inputs.PR_AUTHOR }}"
+            --set-env-vars=PROJECT_NUMBER="${{ inputs.PROJECT_NUMBER }}"
+            --set-env-vars=COLUMN_NAME="${{ inputs.COLUMN_NAME }}"
             --set-env-vars=LOG_LEVEL=info
             --trigger-http
             --allow-unauthenticated
