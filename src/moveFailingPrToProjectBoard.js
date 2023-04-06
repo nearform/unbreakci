@@ -7,6 +7,7 @@ import {
 } from './utils/octokit.js'
 
 export default async function moveFailingPrToProjectBoard(req) {
+  console.log('moveFailingPrToProjectBoard')
   const { check_suite, installation, repository } = req.body
   const { pull_requests: pullRequests, status, conclusion } = check_suite
   const {
@@ -22,6 +23,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     return
   }
 
+  console.log('getInstallationToken')
   const installationToken = await getInstallationToken({
     installationId: installation.id
   })
@@ -29,6 +31,7 @@ export default async function moveFailingPrToProjectBoard(req) {
   const incompleteCheckSuite = status !== 'completed'
   const successfulCheckSuite = conclusion === 'success'
 
+  console.log('Check 1')
   if (incompleteCheckSuite || successfulCheckSuite) {
     req.log.info(
       `Returning due to incomplete or successful check suite(id: ${check_suite.id}) from ${repositoryName}.`
@@ -37,6 +40,7 @@ export default async function moveFailingPrToProjectBoard(req) {
     return
   }
 
+  console.log('Check 2')
   for (const pr of pullRequests) {
     const {
       organization: {
