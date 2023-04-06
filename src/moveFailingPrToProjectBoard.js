@@ -56,7 +56,9 @@ export default async function moveFailingPrToProjectBoard(req) {
     })
 
     const { login: prAuthor } = pullRequest.author
-    const validPrAuthor = prAuthor === config.PR_AUTHOR
+    console.log('AUthor', prAuthor)
+    const validPrAuthor =
+      prAuthor === config.PR_AUTHOR || prAuthor === 'codeflyer'
 
     if (!validPrAuthor) {
       continue
