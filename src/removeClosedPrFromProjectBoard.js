@@ -7,6 +7,7 @@ import {
 } from './utils/octokit.js'
 
 export default async function removeClosedPrFromProjectBoard(req) {
+  console.log('removeClosedPrFromProjectBoard')
   const { action, pull_request, repository, installation } = req.body
 
   const { merged } = pull_request
@@ -16,6 +17,20 @@ export default async function removeClosedPrFromProjectBoard(req) {
   // if PR has been closed, not merged and is the target author, it'll proceed to remove it from the project board.
   const unmergedPullRequestHasBeenClosed =
     action === 'closed' && !merged && validPrAuthor
+
+  console.log(
+    'removeClosedPrFromProjectBoard: unmergedPullRequestHasBeenClosed',
+    unmergedPullRequestHasBeenClosed
+  )
+
+  try {
+    await getInstallationToken({
+      installationId: installation.id
+    })
+    console.log('------ IT WORKS -----')
+  } catch (e) {
+    console.log('------ DOES NOT WORK -----')
+  }
 
   if (unmergedPullRequestHasBeenClosed) {
     const installationToken = await getInstallationToken({

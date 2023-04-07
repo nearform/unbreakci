@@ -6,7 +6,6 @@ export default async function appRoutes(fastify) {
   fastify.post('/', {
     preHandler: verifyRequest,
     handler: async function runApp(req) {
-      console.log(req.body)
       try {
         const { check_suite, pull_request } = req.body
 
