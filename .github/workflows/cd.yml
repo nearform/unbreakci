@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - chore/deploy-refactoring-266
+  workflow_call:
 
 jobs:
   deploy-app-dev:
