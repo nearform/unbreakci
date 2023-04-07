@@ -29,6 +29,7 @@ export default async function removeClosedPrFromProjectBoard(req) {
     })
     console.log('------ IT WORKS -----')
   } catch (e) {
+    console.log(e)
     console.log('------ DOES NOT WORK -----')
   }
 
