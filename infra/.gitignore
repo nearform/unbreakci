@@ -1,7 +1,0 @@
-*.tfstate
-*.tfstate.backup
-*.out
-.iac-test
-key.json
-out.json
-.terraform
