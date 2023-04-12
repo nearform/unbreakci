@@ -12,14 +12,7 @@
 ## Environment
 
 - Node.js application using [Fastify](https://github.com/fastify/fastify) server
-- UnbreakCI runs using Terraform and GCP Cloud Run
-- The Cloud Run environment is created by the pipelines and uses the `google-github-actions/deploy-cloudrun@v0` plugin. The first time the pipeline runs, it creates the environment, and the next time it updates the docker image
-
-## Infra Diagram
-![Alt text](/diagrams/unbreakci_infra.png "")
-
-## Github Actions workflow strategy
-![Alt text](/diagrams/unbreakci_workflows.png "")
+- UnbreakCI runs using cloud functions on GCP Cloud Run
 
 ## Setup
 
@@ -58,3 +51,13 @@
   - **Repository permissions > Checks** (read)
   - **Organization permissions > Projects** (read/write)
 - Subscribe to **Pull Request** and **Check Suite** events
+
+## Stage environment
+
+The staging app is deployed and configured [here](https://github.com/organizations/nearform/settings/apps/unbreak-ci-dev).
+It adds the issues in a separate board: https://github.com/orgs/nearform/projects/20
+
+The staging app is connected to a sample repository: https://github.com/nearform/unbreak-ci-test-repo
+
+By default, the dependabot integration is disabled in the sample repository to avoid tickets to be added to the main board. 
+It can be enabled at this address: https://github.com/nearform/unbreak-ci-test-repo/settings/security_analysis
