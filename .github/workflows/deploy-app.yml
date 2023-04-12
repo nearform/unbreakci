@@ -6,34 +6,43 @@ on:
       env:
         required: true
         type: string
+      GCP_PROJECT_ID:
+        required: true
+        type: string
+      GCP_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
+        type: string
+      GCP_SERVICE_ACCOUNT:
+        required: true
+        type: string
+      APP_ID_GITHUB:
+        required: true
+        type: string
+      PR_AUTHOR:
+        required: true
+        type: string
+      PROJECT_NUMBER:
+        required: true
+        type: string
+      COLUMN_NAME:
+        required: true
+        type: string
+      webhook_path:
+        required: true
+        type: string
 
     secrets:
-      app_id_github:
-        required: true
-      pr_author:
-        required: true
-      project_number:
-        required: true
-      column_name:
-        required: true
-      project_id:
-        required: true
-      gcp_provider_name:
-        required: true
-      gcp_sa:
-        required: true
       gcp_webhook_secret:
         required: true
       gcp_app_key:
         required: true
-      
 
 jobs:
     deploy:
         name: Setup Gcloud Account
         permissions:
           id-token: write
-          contents: read 
+          contents: read
         runs-on: ubuntu-latest
         env:
           gcp_service_region: us-central1
@@ -44,39 +53,39 @@ jobs:
           with:
             ref: ${{ github.head_ref }}
 
-        - name: GCP Authentication
-          id: auth
-          uses: 'google-github-actions/auth@v1'
+        - name: 'Authenticate with GCP'
+          uses: google-github-actions/auth@v1
           with:
-            token_format: 'access_token'
-            workload_identity_provider: ${{ secrets.gcp_provider_name }}
-            service_account: ${{ secrets.gcp_sa }}
+            workload_identity_provider: ${{ inputs.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+            service_account: ${{ inputs.GCP_SERVICE_ACCOUNT }}
 
-        - name: Update the GPC Webhook Secrets
-          run: |
-            echo -n "${{ secrets.gcp_webhook_secret }}" | gcloud secrets versions add unbreak_${{ inputs.env }}_webhook_secret --data-file=-
-                       
-            
-        - name: Update the GPC App Key Secrets
-          run: |
-            echo "${{ secrets.gcp_app_key }}" | gcloud secrets versions add unbreak_${{ inputs.env }}_app_key --data-file=-
-
-        - name: Deploy Docker image
-          uses: 'google-github-actions/deploy-cloudrun@v1'
+        - name: 'Set up Cloud SDK'
+          uses: google-github-actions/setup-gcloud@v1
           with:
-            service: 'unbreakci-${{ inputs.env }}'
-            region: ${{ env.gcp_service_region }}
-            project_id: ${{ env.project_id }}
-            flags: --allow-unauthenticated
-            suffix: ${{ github.sha }}
-            source: .
-            env_vars: |
-              APP_ID_GITHUB=${{ secrets.app_id_github }}
-              PR_AUTHOR=${{ secrets.pr_author }}
-              PROJECT_NUMBER=${{ secrets.project_number }}
-              COLUMN_NAME=${{ secrets.column_name }}
-              LOG_LEVEL=info
-            secrets: |
-              WEBHOOK_SECRET=unbreak_${{ inputs.env }}_webhook_secret:latest
-              APP_KEY=unbreak_${{ inputs.env }}_app_key:latest
+            project_id: ${{ inputs.GCP_PROJECT_ID }}
 
+        - name: Update secrets in GCP Secret Manager
+          uses: nearform-actions/github-action-gcp-secrets@v1
+          with:
+            secrets: |-
+              unbreak_${{ inputs.env }}_webhook_secret:"${{ secrets.GCP_WEBHOOK_SECRET }}"
+              unbreak_${{ inputs.env }}_app_key:"${{ secrets.GCP_APP_KEY }}"
+
+        - name: 'Deploy webhook to Cloud Run'
+          id: deploy-webhook
+          run: >-
+            gcloud functions deploy ${{ inputs.webhook_path }}
+            --runtime=nodejs18
+            --source=.
+            --entry-point=webhook
+            --set-secrets=APP_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_app_key:latest
+            --set-secrets=WEBHOOK_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_webhook_secret:latest
+            --set-env-vars=APP_ID="${{ inputs.APP_ID_GITHUB  }}"
+            --set-env-vars=PR_AUTHOR="${{ inputs.PR_AUTHOR }}"
+            --set-env-vars=PROJECT_NUMBER="${{ inputs.PROJECT_NUMBER }}"
+            --set-env-vars=COLUMN_NAME="${{ inputs.COLUMN_NAME }}"
+            --set-env-vars=LOG_LEVEL=info
+            --trigger-http
+            --allow-unauthenticated
+            --region=us-central1
+            --gen2

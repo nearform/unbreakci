@@ -1,15 +1,28 @@
+'use strict'
+
+import http from 'http'
+
 import buildServer from './src/server.js'
-import config from './config.js'
 
-const server = buildServer(config)
+let handleRequest = null
 
-async function start(fastify) {
-  try {
-    await server.listen({ port: config.PORT, host: '0.0.0.0' })
-  } catch (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
+const serverFactory = handler => {
+  handleRequest = handler
+
+  return http.createServer()
 }
 
-start()
+const app = buildServer({ serverFactory })
+
+// see https://github.com/fastify/fastify/issues/946#issuecomment-766319521
+// this is necessary if you want to support JSON inputs in POST/PATCH requests
+app.addContentTypeParser('application/json', {}, (req, body, done) => {
+  done(null, body.body)
+})
+
+export const webhook = (req, res) => {
+  app.ready(err => {
+    if (err) throw err
+    handleRequest(req, res)
+  })
+}

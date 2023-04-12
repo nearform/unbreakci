@@ -1,0 +1,27 @@
+name: Production Deploy
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-app-prod:
+    name: deploy the app - Prod
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      env: prod
+      APP_ID_GITHUB: ${{ vars.APP_ID_PROD }}
+      PR_AUTHOR: ${{ vars.PR_AUTHOR }}
+      PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER_PROD }}
+      COLUMN_NAME: ${{ vars.COLUMN_NAME_PROD }}
+      webhook_path: webhook-prod
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+    secrets:
+      GCP_APP_KEY: ${{ secrets.GCP_APP_KEY_PROD }}
+      GCP_WEBHOOK_SECRET: ${{ secrets.GCP_WEBHOOK_SECRET_PROD }}
