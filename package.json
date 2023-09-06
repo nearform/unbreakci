@@ -1,6 +1,6 @@
 {
   "name": "unbreakci",
-  "version": "1.3.9",
+  "version": "1.3.10",
   "description": "A GitHub app to automatically add broken dependabot bumps to the project board, therefore allowing us to unbreak the CI.",
   "main": "index.js",
   "type": "module",
