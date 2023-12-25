@@ -40,7 +40,7 @@
     "prettier": "^3.1.1"
   },
   "dependencies": {
-    "@octokit/auth-app": "^6.0.1",
+    "@octokit/auth-app": "^6.0.2",
     "@octokit/graphql": "^7.0.2",
     "env-schema": "^5.2.1",
     "fastify": "^4.25.1",
