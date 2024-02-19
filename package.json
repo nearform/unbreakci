@@ -43,7 +43,7 @@
     "@octokit/auth-app": "^6.0.3",
     "@octokit/graphql": "^7.0.2",
     "env-schema": "^5.2.1",
-    "fastify": "^4.26.0",
+    "fastify": "^4.26.1",
     "fluent-json-schema": "^4.2.1",
     "http-errors": "^2.0.0"
   },
