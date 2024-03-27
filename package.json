@@ -9,7 +9,7 @@
     "start": "node indexLocal.js",
     "lint": "eslint .",
     "test": "jest",
-    "prepare": "npx husky install"
+    "prepare": "npx husky"
   },
   "repository": {
     "type": "git",
