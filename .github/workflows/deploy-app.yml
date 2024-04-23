@@ -75,7 +75,7 @@ jobs:
           id: deploy-webhook
           run: >-
             gcloud functions deploy ${{ inputs.webhook_path }}
-            --runtime=nodejs18
+            --runtime=nodejs20
             --source=.
             --entry-point=webhook
             --set-secrets=APP_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/unbreak_${{ inputs.env }}_app_key:latest
