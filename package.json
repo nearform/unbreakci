@@ -28,7 +28,7 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@jest/globals": "^29.7.0",
-    "babel-jest": "^29.6.3",
+    "babel-jest": "^30.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jest": "^28.14.0",
