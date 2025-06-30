@@ -37,7 +37,7 @@
     "jest": "^30.0.0",
     "lint-staged": "^16.1.2",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3"
+    "prettier": "^3.6.2"
   },
   "dependencies": {
     "@octokit/auth-app": "^6.1.1",
