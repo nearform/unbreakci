@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/nearform/unbreakci#readme",
   "devDependencies": {
-    "@babel/core": "^7.28.4",
+    "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
