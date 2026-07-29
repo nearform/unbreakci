@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/nearform/unbreakci#readme",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
+    "@babel/core": "^7.29.6",
     "@babel/preset-env": "^7.29.0",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.3.1",
@@ -43,7 +43,7 @@
     "@octokit/auth-app": "^6.1.1",
     "@octokit/graphql": "^7.0.2",
     "env-schema": "^6.1.0",
-    "fastify": "^5.7.4",
+    "fastify": "^5.8.5",
     "fluent-json-schema": "^6.0.0",
     "http-errors": "^2.0.1"
   },
