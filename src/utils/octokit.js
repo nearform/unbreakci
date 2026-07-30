@@ -110,6 +110,23 @@ async function getPullRequestAndProjectDetails({
           author {
             login
           }
+          labels(first: 100) {
+            nodes {
+              name
+            }
+          }
+          projectItems(first: 20) {
+            nodes {
+              project {
+                id
+              }
+              fieldValueByName(name: "Status") {
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  name
+                }
+              }
+            }
+          }
         }
       }
       projectV2(number: $projectNumber) {
