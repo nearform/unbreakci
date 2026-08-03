@@ -41,10 +41,9 @@ export default async function moveFailingPrToProjectBoard(req) {
   const failures = []
 
   for (const pr of pullRequests) {
-    // Carry on through the rest of the check suite if one pull request fails,
-    // then fail the delivery at the end so it shows up in the App's delivery
-    // list and can be redelivered. Adding a card and setting its column are
-    // both repeatable, so replaying the whole suite is safe.
+    // Don't let one failing pull request stop the others. The delivery still
+    // fails at the end so it can be redelivered, which is safe to do — adding
+    // a card and setting its column can both be repeated.
     try {
       const {
         organization: {
@@ -72,8 +71,8 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
-      // Where the card sits already. A labelled card with a column was put there
-      // by the label rule, so leave it — and there is nothing to add either.
+      // Which column the card is in already, if any. A labelled PR that has one
+      // was put there by the label rule, so it needs nothing doing to it.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
@@ -100,8 +99,6 @@ export default async function moveFailingPrToProjectBoard(req) {
         `Broken ${config.PR_AUTHOR} PR number ${pr.number} from ${repositoryName} has been found and added to project number ${config.PROJECT_NUMBER} board.`
       )
 
-      // Labelled but with no column at all — the label rule never managed to place
-      // it. Put it where it belongs rather than treating it as a routine chore.
       const wantedColumn =
         escalationConfigured && labelledForHuman
           ? config.ESCALATION_COLUMN
@@ -135,14 +132,14 @@ export default async function moveFailingPrToProjectBoard(req) {
 
       req.log.error(
         { err },
-        `Could not board PR number ${pr.number} from ${repositoryName}. Continuing with the rest of the check suite.`
+        `Failed to update the board for PR number ${pr.number} from ${repositoryName}. Continuing with the rest of the check suite.`
       )
     }
   }
 
   if (failures.length) {
     throw new Error(
-      `Could not board ${failures.length} of ${pullRequests.length} pull requests from ${repositoryName}: ${failures.join(', ')}`
+      `Failed to update the board for ${failures.length} of ${pullRequests.length} pull requests from ${repositoryName}: ${failures.join(', ')}`
     )
   }
 }

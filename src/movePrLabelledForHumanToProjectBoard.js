@@ -14,10 +14,7 @@ export default async function movePrLabelledForHumanToProjectBoard(req) {
     owner: { login: ownerLogin }
   } = repository
 
-  // Both must be configured — this keeps the rule off until a deployment opts
-  // in. ESCALATION_LABEL is shared between environments, so having it set while
-  // the column is unset is the documented way to keep one environment dormant,
-  // not a mistake worth warning about.
+  // Both must be set — the rule stays off until a deployment opts in.
   if (!config.ESCALATION_LABEL || !config.ESCALATION_COLUMN) {
     return
   }
@@ -55,9 +52,8 @@ export default async function movePrLabelledForHumanToProjectBoard(req) {
     pullRequestNumber: labelledPr.number
   })
 
-  // The card goes on first. The label means a human needs to see this PR, so it
-  // belongs on the board even if the column name turns out to be misconfigured —
-  // a card with no Status is at least visible, unlike no card at all.
+  // Add the card first. If the column name turns out to be wrong, a card with
+  // no column is still visible on the board — no card at all isn't.
   const {
     addProjectV2ItemById: {
       item: { id: projectV2AddedItemId }
