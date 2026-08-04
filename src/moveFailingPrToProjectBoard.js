@@ -76,13 +76,8 @@ export default async function moveFailingPrToProjectBoard(req) {
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // A labelled card still sitting in COLUMN_NAME needs moving. COLUMN_NAME
-      // is where this rule puts cards when it has no escalation to make, so a
-      // labelled card there has not been escalated yet — usually because the
-      // card went on the board before the label existed, which is the normal
-      // order, since a failing check suite is what prompts the label. Leave
-      // every other column: the escalation column is already done, and
-      // anything else was most likely chosen deliberately.
+      // COLUMN_NAME is where this rule puts cards itself, so a labelled card
+      // there has not been escalated yet. Anywhere else, someone chose it.
       const placedOnPurpose = Boolean(
         currentColumn && currentColumn !== config.COLUMN_NAME
       )

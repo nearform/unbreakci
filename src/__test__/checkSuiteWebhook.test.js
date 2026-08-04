@@ -57,10 +57,8 @@ const boardColumns = {
   ]
 }
 
-// A labelled dependabot PR whose card sits in `column`, or has no card at all
-// when `column` is null. The two lists below name the column values the
-// escalation guard treats differently, so a value nobody has thought about
-// shows up as a missing row rather than as a test that was never written.
+// Fake API response for a labelled dependabot PR. `column` is the board column
+// its card sits in, or null when it has no card.
 const labelledCardIn = column => ({
   organization: {
     repository: {
@@ -266,10 +264,6 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // The column the guard compares against has to be whatever COLUMN_NAME says,
-  // not a name hardcoded here. In production that value comes from a GitHub
-  // Actions variable and carries an emoji, so a literal would pass the tests
-  // above and still fail on the real board.
   it('escalates a labelled PR whose card is in a renamed chores column', async () => {
     config.COLUMN_NAME = 'renamed chores'
 
