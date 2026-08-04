@@ -52,12 +52,16 @@ const boardColumns = {
   id: 33,
   options: [
     { name: 'unbreakci', id: 44 },
-    { name: 'needs maintainer', id: 66 }
+    { name: 'needs maintainer', id: 66 },
+    { name: 'blocked', id: 111 }
   ]
 }
 
-// Labelled, and the card already sits in the escalation column.
-const labelledPullRequestDetails = {
+// A labelled dependabot PR whose card sits in `column`, or has no card at all
+// when `column` is null. The two lists below name the column values the
+// escalation guard treats differently, so a value nobody has thought about
+// shows up as a missing row rather than as a test that was never written.
+const labelledCardIn = column => ({
   organization: {
     repository: {
       pullRequest: {
@@ -65,33 +69,25 @@ const labelledPullRequestDetails = {
         author: { login: 'dependabot' },
         labels: { nodes: [{ name: 'requires-human' }] },
         projectItems: {
-          nodes: [
-            {
-              project: { id: 22 },
-              fieldValueByName: { name: 'needs maintainer' }
-            }
-          ]
+          nodes: column
+            ? [{ project: { id: 22 }, fieldValueByName: { name: column } }]
+            : []
         }
       }
     },
     projectV2: { id: 22, field: boardColumns }
   }
-}
+})
 
-// Labelled, but the card has no column at all — the label rule never placed it.
-const labelledWithNoColumnDetails = {
-  organization: {
-    repository: {
-      pullRequest: {
-        id: 11,
-        author: { login: 'dependabot' },
-        labels: { nodes: [{ name: 'requires-human' }] },
-        projectItems: { nodes: [] }
-      }
-    },
-    projectV2: { id: 22, field: boardColumns }
-  }
-}
+const escalatedWhenCardIs = [
+  ['not on the board at all', null],
+  ['still in the chores column the failing-run rule uses', 'unbreakci']
+]
+
+const leftAloneWhenCardIs = [
+  ['already in the escalation column', 'needs maintainer'],
+  ['in a column someone moved it to on purpose', 'blocked']
+]
 
 const otherLabelsPullRequestDetails = {
   organization: {
@@ -245,9 +241,40 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  it('escalates a labelled PR whose card has no column yet', async () => {
+  escalatedWhenCardIs.forEach(([state, column]) => {
+    it(`escalates a labelled PR whose card is ${state}`, async () => {
+      getPullRequestAndProjectDetails.mockResolvedValueOnce(
+        labelledCardIn(column)
+      )
+
+      const body = JSON.stringify(defaultBody)
+
+      await testServer.inject({
+        method: 'POST',
+        headers: getDefaultHeaders(body),
+        url: '/',
+        body
+      })
+
+      expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+        columnId: 66,
+        fieldId: 33,
+        installationToken: 'token',
+        itemId: 55,
+        projectId: 22
+      })
+    })
+  })
+
+  // The column the guard compares against has to be whatever COLUMN_NAME says,
+  // not a name hardcoded here. In production that value comes from a GitHub
+  // Actions variable and carries an emoji, so a literal would pass the tests
+  // above and still fail on the real board.
+  it('escalates a labelled PR whose card is in a renamed chores column', async () => {
+    config.COLUMN_NAME = 'renamed chores'
+
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledWithNoColumnDetails
+      labelledCardIn('renamed chores')
     )
 
     const body = JSON.stringify(defaultBody)
@@ -268,22 +295,24 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  it('leaves a labelled PR that is already in a column completely alone', async () => {
-    getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledPullRequestDetails
-    )
+  leftAloneWhenCardIs.forEach(([state, column]) => {
+    it(`leaves a labelled PR alone when its card is ${state}`, async () => {
+      getPullRequestAndProjectDetails.mockResolvedValueOnce(
+        labelledCardIn(column)
+      )
 
-    const body = JSON.stringify(defaultBody)
+      const body = JSON.stringify(defaultBody)
 
-    await testServer.inject({
-      method: 'POST',
-      headers: getDefaultHeaders(body),
-      url: '/',
-      body
+      await testServer.inject({
+        method: 'POST',
+        headers: getDefaultHeaders(body),
+        url: '/',
+        body
+      })
+
+      expect(addPrToProject).not.toHaveBeenCalled()
+      expect(moveCardToProjectColumn).not.toHaveBeenCalled()
     })
-
-    expect(addPrToProject).not.toHaveBeenCalled()
-    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
   it('does not move the card if the board has no status field', async () => {
@@ -338,7 +367,7 @@ describe('Check Suite Webhook tests', () => {
     config.ESCALATION_COLUMN = ''
 
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledPullRequestDetails
+      labelledCardIn('needs maintainer')
     )
 
     const body = JSON.stringify(defaultBody)
@@ -363,7 +392,7 @@ describe('Check Suite Webhook tests', () => {
     config.ESCALATION_LABEL = ''
 
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledPullRequestDetails
+      labelledCardIn('needs maintainer')
     )
 
     const body = JSON.stringify(defaultBody)

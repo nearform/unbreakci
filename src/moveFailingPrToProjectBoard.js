@@ -71,13 +71,23 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
-      // Which column the card is in already, if any. A labelled PR that has one
-      // was put there by the label rule, so it needs nothing doing to it.
+      // Which column the card is in already, if any.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      if (escalationConfigured && labelledForHuman && currentColumn) {
+      // A labelled card still sitting in COLUMN_NAME needs moving. COLUMN_NAME
+      // is where this rule puts cards when it has no escalation to make, so a
+      // labelled card there has not been escalated yet — usually because the
+      // card went on the board before the label existed, which is the normal
+      // order, since a failing check suite is what prompts the label. Leave
+      // every other column: the escalation column is already done, and
+      // anything else was most likely chosen deliberately.
+      const placedOnPurpose = Boolean(
+        currentColumn && currentColumn !== config.COLUMN_NAME
+      )
+
+      if (escalationConfigured && labelledForHuman && placedOnPurpose) {
         req.log.info(
           `PR number ${pr.number} from ${repositoryName} is labelled "${config.ESCALATION_LABEL}" and already in the ${currentColumn} column. Leaving it alone.`
         )
