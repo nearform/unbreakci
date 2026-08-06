@@ -87,6 +87,19 @@ const leftAloneWhenCardIs = [
   ['in a column someone moved it to on purpose', 'blocked']
 ]
 
+// Same PR without the escalation label. Removing the label is how a maintainer
+// says they have picked the work up, so the card must stay where they left it
+// rather than being dragged back to the chores column.
+const unlabelledCardIn = column => {
+  const details = labelledCardIn(column)
+
+  details.organization.repository.pullRequest.labels = {
+    nodes: [{ name: 'dependencies' }]
+  }
+
+  return details
+}
+
 const otherLabelsPullRequestDetails = {
   organization: {
     repository: {
@@ -282,6 +295,51 @@ describe('Check Suite Webhook tests', () => {
 
     expect(moveCardToProjectColumn).toHaveBeenCalledWith({
       columnId: 66,
+      fieldId: 33,
+      installationToken: 'token',
+      itemId: 55,
+      projectId: 22
+    })
+  })
+
+  // The label is gone but the card is still in the escalation column, which is
+  // what it looks like when a maintainer picks the work up. Leave it there.
+  it('leaves an unlabelled PR alone when its card is already escalated', async () => {
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('needs maintainer')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+  })
+
+  // An unlabelled card in some other column does go back to chores. Without
+  // this a card could sit somewhere neither rule ever touches again — GitHub
+  // itself can add a card and set its own status.
+  it('returns an unlabelled PR to the chores column from anywhere else', async () => {
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('blocked')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 44,
       fieldId: 33,
       installationToken: 'token',
       itemId: 55,

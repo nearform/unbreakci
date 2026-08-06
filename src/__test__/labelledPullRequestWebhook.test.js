@@ -46,6 +46,36 @@ jest.mock('../utils/octokit.js', () => ({
 
 const testServer = buildServer()
 
+// Fake API response for a labelled dependabot PR. `column` is the board column
+// its card sits in, or null when it has no card.
+const detailsWithCardIn = column => ({
+  organization: {
+    repository: {
+      pullRequest: {
+        id: 11,
+        author: { login: 'dependabot' },
+        projectItems: {
+          nodes: column
+            ? [{ project: { id: 22 }, fieldValueByName: { name: column } }]
+            : []
+        }
+      }
+    },
+    projectV2: {
+      id: 22,
+      field: { id: 33, options: [{ name: 'needs maintainer', id: 44 }] }
+    }
+  }
+})
+
+// The columns a card can be in, grouped by whether this rule moves it.
+const movedWhenCardIs = [['still in the chores column', 'unbreakci']]
+
+const leftAloneWhenCardIs = [
+  ['already in the escalation column', 'needs maintainer'],
+  ['in a column someone moved it to on purpose', 'in progress']
+]
+
 const defaultBody = {
   action: 'labeled',
   installation: { id: 123 },
@@ -259,5 +289,59 @@ describe('Labelled Pull Request Webhook tests', () => {
     expect(addPrToProject).not.toHaveBeenCalled()
     expect(moveCardToProjectColumn).not.toHaveBeenCalled()
     expect(response.statusCode).toBe(200)
+  })
+
+  // Re-applying the label must not undo a maintainer's triage. Only a card
+  // still in COLUMN_NAME, or no card at all, is this rule's to move.
+  movedWhenCardIs.forEach(([state, column]) => {
+    it(`moves a labelled PR whose card is ${state}`, async () => {
+      getPullRequestAndProjectDetails.mockResolvedValueOnce(
+        detailsWithCardIn(column)
+      )
+
+      const response = await inject(JSON.stringify(defaultBody))
+
+      expect(moveCardToProjectColumn).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200)
+    })
+  })
+
+  leftAloneWhenCardIs.forEach(([state, column]) => {
+    it(`leaves a labelled PR alone when its card is ${state}`, async () => {
+      getPullRequestAndProjectDetails.mockResolvedValueOnce(
+        detailsWithCardIn(column)
+      )
+
+      const response = await inject(JSON.stringify(defaultBody))
+
+      expect(addPrToProject).not.toHaveBeenCalled()
+      expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+      expect(response.statusCode).toBe(200)
+    })
+  })
+
+  // A wrong PROJECT_NUMBER comes back as a NOT_FOUND, which octokit throws as a
+  // GraphqlResponseError. Redelivering would fail the same way, so warn and stop.
+  it('warns and stops when GitHub says something is missing', async () => {
+    const err = new Error('Could not resolve to a ProjectV2 with the number 9.')
+    err.name = 'GraphqlResponseError'
+    getPullRequestAndProjectDetails.mockRejectedValueOnce(err)
+
+    const response = await inject(JSON.stringify(defaultBody))
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+    expect(response.statusCode).toBe(200)
+  })
+
+  it('fails the delivery when the read fails for any other reason', async () => {
+    getPullRequestAndProjectDetails.mockRejectedValueOnce(
+      new Error('socket hang up')
+    )
+
+    const response = await inject(JSON.stringify(defaultBody))
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(response.statusCode).toBe(500)
   })
 })

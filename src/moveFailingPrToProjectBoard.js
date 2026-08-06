@@ -39,11 +39,14 @@ export default async function moveFailingPrToProjectBoard(req) {
   }
 
   const failures = []
+  let firstError
 
   for (const pr of pullRequests) {
     // Don't let one failing pull request stop the others. The delivery still
-    // fails at the end so it can be redelivered, which is safe to do — adding
-    // a card and setting its column can both be repeated.
+    // fails at the end so it shows as failed in the App's delivery list and
+    // someone can redeliver it by hand — GitHub does not retry on its own.
+    // Replaying the whole suite is safe: adding a card and setting its column
+    // can both be repeated.
     try {
       const {
         organization: {
@@ -71,20 +74,28 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
-      // Which column the card is in already, if any.
+      // Which column the card is in already, if any. We read it here but don't
+      // write until further down, so a label landing in between gets its
+      // escalation undone, and only a later failing run would put it right.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // COLUMN_NAME is where this rule puts cards itself, so a labelled card
-      // there has not been escalated yet. Anywhere else, someone chose it.
-      const placedOnPurpose = Boolean(
-        currentColumn && currentColumn !== config.COLUMN_NAME
-      )
+      // A card with no column and a card in COLUMN_NAME both mean nobody has
+      // moved it, so treat them the same.
+      const column = currentColumn ?? config.COLUMN_NAME
 
-      if (escalationConfigured && labelledForHuman && placedOnPurpose) {
+      const alreadyEscalated = column === config.ESCALATION_COLUMN
+      const movedWhileLabelled =
+        labelledForHuman && column !== config.COLUMN_NAME
+
+      // Neither of these is ours to move. An escalated card stays put even
+      // without the label, because removing it is how someone says they've
+      // picked the work up. An unlabelled card anywhere else comes back, so it
+      // can't be stranded somewhere neither rule looks.
+      if (escalationConfigured && (alreadyEscalated || movedWhileLabelled)) {
         req.log.info(
-          `PR number ${pr.number} from ${repositoryName} is labelled "${config.ESCALATION_LABEL}" and already in the ${currentColumn} column. Leaving it alone.`
+          `PR number ${pr.number} from ${repositoryName} is already in the ${currentColumn} column. Leaving it alone.`
         )
 
         continue
@@ -134,6 +145,7 @@ export default async function moveFailingPrToProjectBoard(req) {
       )
     } catch (err) {
       failures.push(pr.number)
+      firstError ??= err
 
       req.log.error(
         { err },
@@ -143,8 +155,11 @@ export default async function moveFailingPrToProjectBoard(req) {
   }
 
   if (failures.length) {
+    // Carry the first failure as the cause, so whoever reads the 500 gets the
+    // status code and GraphQL body rather than only a count of PR numbers.
     throw new Error(
-      `Failed to update the board for ${failures.length} of ${pullRequests.length} pull requests from ${repositoryName}: ${failures.join(', ')}`
+      `Failed to update the board for ${failures.length} of ${pullRequests.length} pull requests from ${repositoryName}: ${failures.join(', ')}`,
+      { cause: firstError }
     )
   }
 }
