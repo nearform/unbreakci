@@ -5,6 +5,9 @@ export default {
   transform: {
     '^.+\\.js$': 'babel-jest'
   },
+  // @octokit/* and parts of its dependency tree ship ESM-only builds, so
+  // node_modules must be transformed too
+  transformIgnorePatterns: [],
   coverageThreshold: {
     global: {
       branches: 100,
