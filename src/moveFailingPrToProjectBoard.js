@@ -45,8 +45,6 @@ export default async function moveFailingPrToProjectBoard(req) {
     // Don't let one failing pull request stop the others. The delivery still
     // fails at the end so it shows as failed in the App's delivery list and
     // someone can redeliver it by hand — GitHub does not retry on its own.
-    // Replaying the whole suite is safe: adding a card and setting its column
-    // can both be repeated.
     try {
       const {
         organization: {
@@ -74,29 +72,23 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
-      // Which column the card is in already, if any. We read it here but don't
-      // write until further down, so a label landing in between gets its
-      // escalation undone, and only a later failing run would put it right.
+      // Work out whether this card is still ours to move. Reading the column now
+      // and writing further down leaves a gap: a label landing in between gets
+      // its escalation undone until the next failing run.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // A card with no column and a card in COLUMN_NAME both mean nobody has
-      // moved it, so treat them the same.
+      // No card counts as still in COLUMN_NAME — nobody has moved it. Nobody has
+      // escalated it either, which is why that check reads the real column.
       const column = currentColumn ?? config.COLUMN_NAME
-
-      // Read the card's real column here rather than the fallback above. A
-      // deployment that points ESCALATION_COLUMN at COLUMN_NAME would otherwise
-      // read every PR with no card as already escalated, and nothing would ever
-      // reach the board.
       const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
       const movedWhileLabelled =
         labelledForHuman && column !== config.COLUMN_NAME
 
-      // Neither of these is ours to move. An escalated card stays put even
-      // without the label, because removing it is how someone says they've
-      // picked the work up. An unlabelled card anywhere else comes back, so it
-      // can't be stranded somewhere neither rule looks.
+      // An escalated card stays put even without the label — removing it is how
+      // someone says they've picked the work up. An unlabelled card anywhere else
+      // comes back, so it can't be stranded where neither rule looks.
       if (escalationConfigured && (alreadyEscalated || movedWhileLabelled)) {
         req.log.info(
           `PR number ${pr.number} from ${repositoryName} is already in the ${currentColumn} column. Leaving it alone.`

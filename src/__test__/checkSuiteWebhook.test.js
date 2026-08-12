@@ -302,8 +302,7 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // Both settings can point at the same column. A PR with no card hasn't been
-  // escalated by anyone, so it still has to reach the board.
+  // COLUMN_NAME and ESCALATION_COLUMN can be set to the same value.
   it('still adds a PR when the escalation column is the chores column', async () => {
     config.ESCALATION_COLUMN = 'unbreakci'
 
@@ -581,7 +580,7 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // A PR by someone else is skipped, not treated as the end of the batch.
+  // A PR by someone else just gets skipped — the rest of the batch still runs.
   it('still moves the other PRs when one has another author', async () => {
     getPullRequestAndProjectDetails
       .mockResolvedValueOnce({
@@ -625,7 +624,7 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // Leaving an escalated card where it is skips that PR, not the rest.
+  // Leaving an escalated card alone skips that PR — the rest still run.
   it('still moves the other PRs when one is already escalated', async () => {
     getPullRequestAndProjectDetails
       .mockResolvedValueOnce(labelledCardIn('needs maintainer'))
