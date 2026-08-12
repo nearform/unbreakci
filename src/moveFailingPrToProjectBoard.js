@@ -85,7 +85,11 @@ export default async function moveFailingPrToProjectBoard(req) {
       // moved it, so treat them the same.
       const column = currentColumn ?? config.COLUMN_NAME
 
-      const alreadyEscalated = column === config.ESCALATION_COLUMN
+      // Read the card's real column here rather than the fallback above. A
+      // deployment that points ESCALATION_COLUMN at COLUMN_NAME would otherwise
+      // read every PR with no card as already escalated, and nothing would ever
+      // reach the board.
+      const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
       const movedWhileLabelled =
         labelledForHuman && column !== config.COLUMN_NAME
 

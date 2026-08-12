@@ -302,6 +302,36 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
+  // Both settings can point at the same column. A PR with no card hasn't been
+  // escalated by anyone, so it still has to reach the board.
+  it('still adds a PR when the escalation column is the chores column', async () => {
+    config.ESCALATION_COLUMN = 'unbreakci'
+
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(labelledCardIn(null))
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).toHaveBeenCalledWith({
+      contentId: 11,
+      installationToken: 'token',
+      projectId: 22
+    })
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 44,
+      fieldId: 33,
+      installationToken: 'token',
+      itemId: 55,
+      projectId: 22
+    })
+  })
+
   // The label is gone but the card is still in the escalation column, which is
   // what it looks like when a maintainer picks the work up. Leave it there.
   it('leaves an unlabelled PR alone when its card is already escalated', async () => {
@@ -542,6 +572,88 @@ describe('Check Suite Webhook tests', () => {
       body
     })
 
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 99,
+      fieldId: 88,
+      installationToken: 'token',
+      itemId: 100,
+      projectId: 77
+    })
+  })
+
+  // A PR by someone else is skipped, not treated as the end of the batch.
+  it('still moves the other PRs when one has another author', async () => {
+    getPullRequestAndProjectDetails
+      .mockResolvedValueOnce({
+        organization: {
+          repository: {
+            pullRequest: { id: 11, author: { login: 'renovate' } }
+          }
+        }
+      })
+      .mockResolvedValueOnce(secondPullRequestDetails)
+
+    addPrToProject.mockResolvedValueOnce({
+      addProjectV2ItemById: { item: { id: 100 } }
+    })
+
+    const body = JSON.stringify({
+      ...defaultBody,
+      check_suite: {
+        ...defaultBody.check_suite,
+        pull_requests: [
+          { number: 123, author: 'renovate' },
+          { number: 456, author: 'dependabot' }
+        ]
+      }
+    })
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).toHaveBeenCalledTimes(1)
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 99,
+      fieldId: 88,
+      installationToken: 'token',
+      itemId: 100,
+      projectId: 77
+    })
+  })
+
+  // Leaving an escalated card where it is skips that PR, not the rest.
+  it('still moves the other PRs when one is already escalated', async () => {
+    getPullRequestAndProjectDetails
+      .mockResolvedValueOnce(labelledCardIn('needs maintainer'))
+      .mockResolvedValueOnce(secondPullRequestDetails)
+
+    addPrToProject.mockResolvedValueOnce({
+      addProjectV2ItemById: { item: { id: 100 } }
+    })
+
+    const body = JSON.stringify({
+      ...defaultBody,
+      check_suite: {
+        ...defaultBody.check_suite,
+        pull_requests: [
+          { number: 123, author: 'dependabot' },
+          { number: 456, author: 'dependabot' }
+        ]
+      }
+    })
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).toHaveBeenCalledTimes(1)
     expect(moveCardToProjectColumn).toHaveBeenCalledWith({
       columnId: 99,
       fieldId: 88,
