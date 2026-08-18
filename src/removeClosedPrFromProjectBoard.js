@@ -5,13 +5,13 @@ import {
   getPullRequestProjectItems,
   removePrFromProject
 } from './utils/octokit.js'
+import isMonitoredAuthor from './utils/prAuthor.js'
 
 export default async function removeClosedPrFromProjectBoard(req) {
   const { action, pull_request, repository, installation } = req.body
 
   const { merged } = pull_request
-  const { login: prAuthor } = pull_request.user
-  const validPrAuthor = prAuthor === `${config.PR_AUTHOR}[bot]`
+  const validPrAuthor = isMonitoredAuthor(pull_request.user?.login)
 
   // if PR has been closed, not merged and is the target author, it'll proceed to remove it from the project board.
   const unmergedPullRequestHasBeenClosed =

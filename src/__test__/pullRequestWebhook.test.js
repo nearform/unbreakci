@@ -48,6 +48,24 @@ describe('Pull Requests Webhook tests', () => {
     expect(response.statusCode).toBe(200)
   })
 
+  it('does not remove the card if the author is not the monitored one', async () => {
+    const body = JSON.stringify({
+      ...defaultBody,
+      action: 'closed',
+      pull_request: { ...defaultBody.pull_request, user: { login: 'a_human' } }
+    })
+
+    const response = await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(removePrFromProject).not.toHaveBeenCalled()
+    expect(response.statusCode).toBe(200)
+  })
+
   it('removes closed unmerged project from the board', async () => {
     const body = JSON.stringify({ ...defaultBody, action: 'closed' })
 

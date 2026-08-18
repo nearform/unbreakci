@@ -27,6 +27,14 @@ on:
       COLUMN_NAME:
         required: true
         type: string
+      ESCALATION_LABEL:
+        required: false
+        type: string
+        default: ''
+      ESCALATION_COLUMN:
+        required: false
+        type: string
+        default: ''
       webhook_path:
         required: true
         type: string
@@ -84,6 +92,8 @@ jobs:
             --set-env-vars=PR_AUTHOR="${{ inputs.PR_AUTHOR }}"
             --set-env-vars=PROJECT_NUMBER="${{ inputs.PROJECT_NUMBER }}"
             --set-env-vars=COLUMN_NAME="${{ inputs.COLUMN_NAME }}"
+            --set-env-vars=ESCALATION_LABEL="${{ inputs.ESCALATION_LABEL }}"
+            --set-env-vars=ESCALATION_COLUMN="${{ inputs.ESCALATION_COLUMN }}"
             --set-env-vars=LOG_LEVEL=info
             --trigger-http
             --allow-unauthenticated

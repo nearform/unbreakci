@@ -9,6 +9,8 @@ const schema = S.object()
   .prop('COLUMN_NAME', S.string().default(''))
   .prop('PROJECT_NUMBER', S.number().default(null))
   .prop('PR_AUTHOR', S.string().default('dependabot'))
+  .prop('ESCALATION_LABEL', S.string().default(''))
+  .prop('ESCALATION_COLUMN', S.string().default(''))
   .prop('LOG_LEVEL', S.string().default('info'))
 
 const config = envSchema({
