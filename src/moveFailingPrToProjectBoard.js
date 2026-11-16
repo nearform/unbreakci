@@ -76,30 +76,35 @@ export default async function moveFailingPrToProjectBoard(req) {
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // Columns a human parks a card in deliberately — Blocked, Done, and the
-      // like, set per deployment in PROTECTED_COLUMNS — plus the escalation
-      // column, which a maintainer owns once a card reaches it. A card sitting
-      // in any of these was put there on purpose, so leave it.
-      //
-      // Anything else is reclaimed: a card with no column yet, one still in the
-      // chores column, or one that some automation (GitHub Projects can add a
-      // card and set its own status) dropped in an unmanaged column. Those still
-      // need triaging, so they go back through the normal flow below. We can't
-      // read who last moved a card at this point — GitHub only reports that on
-      // the live move event — so the column it rests in stands in for intent.
       const protectedColumns = config.PROTECTED_COLUMNS.split(',')
         .map(name => name.trim())
         .filter(Boolean)
 
-      const leaveAloneColumns = new Set(
-        [config.ESCALATION_COLUMN, ...protectedColumns].filter(Boolean)
-      )
+      // The escalation rule, unchanged: with escalation configured, a card
+      // already in the escalation column, or a labelled card moved anywhere out
+      // of the chores column, is left where it is. A card with no column yet
+      // counts as still in chores, so a freshly labelled PR is still escalated
+      // below rather than skipped here.
+      const column = currentColumn ?? config.COLUMN_NAME
+      const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
+      const movedWhileLabelled =
+        labelledForHuman && column !== config.COLUMN_NAME
+      const escalationLeaveAlone =
+        escalationConfigured && (alreadyEscalated || movedWhileLabelled)
 
-      if (
-        currentColumn &&
+      // Added on top, without touching the rule above it: an unlabelled card a
+      // person parked in a protected column (Blocked, Done, …) is left alone
+      // too. This is the case the label rule never sees. We can't read who moved
+      // a card here — GitHub only reports that on the live move event — so the
+      // column it rests in stands in for intent. Anything not caught by either
+      // rule (no card, still in chores, or dropped in an unmanaged column by
+      // board automation) goes back through the normal flow below.
+      const inProtectedColumn =
+        Boolean(currentColumn) &&
         currentColumn !== config.COLUMN_NAME &&
-        leaveAloneColumns.has(currentColumn)
-      ) {
+        protectedColumns.includes(currentColumn)
+
+      if (escalationLeaveAlone || inProtectedColumn) {
         req.log.info(
           `PR number ${pr.number} from ${repositoryName} is already in the ${currentColumn} column. Leaving it alone.`
         )

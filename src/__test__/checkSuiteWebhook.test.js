@@ -85,10 +85,14 @@ const escalatedWhenCardIs = [
   ['still in the chores column the failing-run rule uses', 'unbreakci']
 ]
 
+// A labelled card is left alone in any non-chores column — the escalation and
+// protected columns, but also an everyday column a maintainer dragged it into,
+// since the label still says a person owns it.
 const leftAloneWhenCardIs = [
   ['already in the escalation column', 'needs maintainer'],
   ['in a protected column the team parks cards in', 'blocked'],
-  ['in another protected column', 'done']
+  ['in another protected column', 'done'],
+  ['in an unmanaged column it was moved to', 'in review']
 ]
 
 // Same PR without the escalation label. Removing the label is how a maintainer
@@ -403,9 +407,11 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // Protecting a column must not strand a labelled card there. With no protected
-  // columns configured, a labelled card in an unmanaged column is escalated.
-  it('escalates a labelled PR in an unmanaged column when none are protected', async () => {
+  // The label rule protects a labelled card in any non-chores column on its
+  // own, so it still holds for a column that is in no protected list. Setting
+  // PROTECTED_COLUMNS empty here proves the protection comes from the label,
+  // not the protected set.
+  it('leaves a labelled PR alone in an unmanaged column even when none are protected', async () => {
     config.PROTECTED_COLUMNS = ''
 
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
@@ -421,13 +427,8 @@ describe('Check Suite Webhook tests', () => {
       body
     })
 
-    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
-      columnId: 66,
-      fieldId: 33,
-      installationToken: 'token',
-      itemId: 55,
-      projectId: 22
-    })
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
   leftAloneWhenCardIs.forEach(([state, column]) => {
@@ -497,11 +498,15 @@ describe('Check Suite Webhook tests', () => {
 
   // If only one of the two settings is filled in, this rule must carry on as it
   // always did. Otherwise the PR is skipped here, ignored by the label rule too,
-  // and never reaches the board at all.
+  // and never reaches the board at all. The card sits in the escalation column,
+  // which is left protected only while escalation is configured — with it off,
+  // the card is moved to chores, as it was before protected columns existed.
   it('moves a PR labelled for a human if no label column is configured', async () => {
     config.ESCALATION_COLUMN = ''
 
-    getPullRequestAndProjectDetails.mockResolvedValueOnce(labelledCardIn(null))
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      labelledCardIn('needs maintainer')
+    )
 
     const body = JSON.stringify(defaultBody)
 
@@ -524,7 +529,9 @@ describe('Check Suite Webhook tests', () => {
   it('moves a PR labelled for a human if no label name is configured', async () => {
     config.ESCALATION_LABEL = ''
 
-    getPullRequestAndProjectDetails.mockResolvedValueOnce(labelledCardIn(null))
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      labelledCardIn('needs maintainer')
+    )
 
     const body = JSON.stringify(defaultBody)
 

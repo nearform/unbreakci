@@ -6,7 +6,7 @@
 ## What does it do?
 
 - UnbreakCI is a Node.js Fastify served [GitHub Application](https://docs.github.com/en/developers/apps/getting-started-with-apps/about-apps) that automatically adds broken dependabot bumps to a configured project board column
-- A card a human parks in one of the `PROTECTED_COLUMNS` (for example `Blocked` or `Done`) is left where it is — a later failing check suite will not pull it back to the chores column. A card found in any other column is still returned to chores, since nothing marks it as deliberately placed (GitHub Projects itself can add a card and set its status)
+- A card a human parks in one of the `PROTECTED_COLUMNS` (for example `Blocked` or `Done`) is left where it is — a later failing check suite will not pull it back to the chores column. An unlabelled card found in any other column is still returned to chores, since nothing marks it as deliberately placed (GitHub Projects itself can add a card and set its status). This is in addition to the escalation-label rule below, which already leaves a labelled card wherever it has been moved
 - If the bump PR is closed with unmerged commits, it will be removed from the project board
 - If a dependabot PR is labelled with `ESCALATION_LABEL`, it is added to the board in `ESCALATION_COLUMN` rather than the usual column, and a later failing check suite will not move it out again — so PRs that Last Light could not resolve on its own stay visibly separate from routine chores
   - It listens to `check_suite` and `pull_request` [webhook events](https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads) to perform those actions
