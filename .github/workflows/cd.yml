@@ -23,6 +23,7 @@ jobs:
       COLUMN_NAME: ${{ vars.COLUMN_NAME_DEV }}
       ESCALATION_LABEL: ${{ vars.ESCALATION_LABEL }}
       ESCALATION_COLUMN: ${{ vars.ESCALATION_COLUMN_DEV }}
+      PROTECTED_COLUMNS: ${{ vars.PROTECTED_COLUMNS_DEV }}
       webhook_path: webhook-dev
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}

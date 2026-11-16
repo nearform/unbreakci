@@ -79,17 +79,38 @@ export default async function moveFailingPrToProjectBoard(req) {
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // No card counts as still in COLUMN_NAME — nobody has moved it. Nobody has
-      // escalated it either, which is why that check reads the real column.
+      const protectedColumns = config.PROTECTED_COLUMNS.split(',')
+        .map(name => name.trim())
+        .filter(Boolean)
+
+      // A PR with no card yet has no column. `column` treats that as the chores
+      // column (nobody has moved the PR), so a freshly labelled PR still counts
+      // as unmoved and gets escalated below rather than skipped. `alreadyEscalated`
+      // reads the raw column instead of that fallback, so a deployment where
+      // ESCALATION_COLUMN equals COLUMN_NAME doesn't mistake a card-less PR for
+      // an escalated one.
       const column = currentColumn ?? config.COLUMN_NAME
       const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
       const movedWhileLabelled =
         labelledForHuman && column !== config.COLUMN_NAME
 
       // An escalated card stays put even without the label — removing it is how
-      // someone says they've picked the work up. An unlabelled card anywhere else
-      // comes back, so it can't be stranded where neither rule looks.
-      if (escalationConfigured && (alreadyEscalated || movedWhileLabelled)) {
+      // someone says they've picked the work up. An unlabelled card anywhere
+      // else comes back, so it can't be stranded where neither rule looks.
+      const escalationLeaveAlone =
+        escalationConfigured && (alreadyEscalated || movedWhileLabelled)
+
+      // Protected columns (Blocked, Done, … via PROTECTED_COLUMNS) are the
+      // exception to that: an unlabelled card a person parked in one is left
+      // alone too. We can't read who moved a card here — GitHub only reports
+      // that on the live move event — so the column it rests in stands in for
+      // intent. A card in no such column still comes back through the flow below.
+      const inProtectedColumn =
+        Boolean(currentColumn) &&
+        currentColumn !== config.COLUMN_NAME &&
+        protectedColumns.includes(currentColumn)
+
+      if (escalationLeaveAlone || inProtectedColumn) {
         req.log.info(
           `PR number ${pr.number} from ${repositoryName} is already in the ${currentColumn} column. Leaving it alone.`
         )

@@ -21,6 +21,8 @@ jest.mock('../../config.js', () => ({
     COLUMN_NAME: 'unbreakci',
     ESCALATION_LABEL: 'requires-human',
     ESCALATION_COLUMN: 'needs maintainer',
+    // A space after the comma, to pin that the list is trimmed.
+    PROTECTED_COLUMNS: 'blocked, done',
     LOG_LEVEL: 'silent'
   }
 }))
@@ -53,7 +55,8 @@ const boardColumns = {
   options: [
     { name: 'unbreakci', id: 44 },
     { name: 'needs maintainer', id: 66 },
-    { name: 'blocked', id: 111 }
+    { name: 'blocked', id: 111 },
+    { name: 'done', id: 222 }
   ]
 }
 
@@ -82,9 +85,14 @@ const escalatedWhenCardIs = [
   ['still in the chores column the failing-run rule uses', 'unbreakci']
 ]
 
+// A labelled card is left alone in any non-chores column — the escalation and
+// protected columns, but also an everyday column a maintainer dragged it into,
+// since the label still says a person owns it.
 const leftAloneWhenCardIs = [
   ['already in the escalation column', 'needs maintainer'],
-  ['in a column someone moved it to on purpose', 'blocked']
+  ['in a protected column the team parks cards in', 'blocked'],
+  ['in another protected column', 'done'],
+  ['in a column that is not protected', 'todo']
 ]
 
 // Same PR without the escalation label. Removing the label is how a maintainer
@@ -149,6 +157,7 @@ describe('Check Suite Webhook tests', () => {
     config.COLUMN_NAME = 'unbreakci'
     config.ESCALATION_LABEL = 'requires-human'
     config.ESCALATION_COLUMN = 'needs maintainer'
+    config.PROTECTED_COLUMNS = 'blocked, done'
   })
 
   it('returns if no pullRequest associated to check suite', async () => {
@@ -350,12 +359,59 @@ describe('Check Suite Webhook tests', () => {
     expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
-  // An unlabelled card in some other column does go back to chores. Without
-  // this a card could sit somewhere neither rule ever touches again — GitHub
-  // itself can add a card and set its own status.
-  it('returns an unlabelled PR to the chores column from anywhere else', async () => {
+  // A card a human parked in a protected column — here "blocked" — stays there,
+  // label or no label. Dragging it back to chores on the next failing run is
+  // exactly what the failing-run rule must not do.
+  it('leaves an unlabelled PR alone when its card is in a protected column', async () => {
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
       unlabelledCardIn('blocked')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+  })
+
+  // A protected column name can contain spaces, and the list tolerates spaces
+  // around the commas. From "blocked, done, in review" a card in "in review"
+  // stays protected — the space inside the name is kept, the ones around the
+  // commas are trimmed.
+  it('leaves a PR alone in a multi-word protected column', async () => {
+    config.PROTECTED_COLUMNS = 'blocked, done, in review'
+
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('in review')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+  })
+
+  // The other side of the rule: a card in a column that is neither chores, the
+  // escalation column nor a protected one was not parked there by a person —
+  // GitHub Projects can add a card and set its own status — so it still needs
+  // triaging and goes back to the chores column. "todo" stands in for a default
+  // status an auto-add workflow sets, not a column the team parks cards in.
+  it('returns a card in an unmanaged column to the chores column', async () => {
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('todo')
     )
 
     const body = JSON.stringify(defaultBody)
@@ -374,6 +430,32 @@ describe('Check Suite Webhook tests', () => {
       itemId: 55,
       projectId: 22
     })
+  })
+
+  // The label alone protects a labelled card in any non-chores column. "blocked"
+  // is in the PROTECTED_COLUMNS this suite configures ('blocked, done'), so
+  // emptying the list here strips its protection — the card being left alone can
+  // then only be the label rule, not a protected column. That is what makes the
+  // empty list load-bearing: drop it and the card would be left alone for the
+  // wrong reason.
+  it('leaves a labelled PR alone by its label when no columns are protected', async () => {
+    config.PROTECTED_COLUMNS = ''
+
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      labelledCardIn('blocked')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
   leftAloneWhenCardIs.forEach(([state, column]) => {
@@ -443,7 +525,9 @@ describe('Check Suite Webhook tests', () => {
 
   // If only one of the two settings is filled in, this rule must carry on as it
   // always did. Otherwise the PR is skipped here, ignored by the label rule too,
-  // and never reaches the board at all.
+  // and never reaches the board at all. The card sits in the escalation column,
+  // which is left protected only while escalation is configured — with it off,
+  // the card is moved to chores, as it was before protected columns existed.
   it('moves a PR labelled for a human if no label column is configured', async () => {
     config.ESCALATION_COLUMN = ''
 
