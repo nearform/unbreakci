@@ -72,6 +72,9 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
+      // Work out whether this card is still ours to move. Reading the column now
+      // and writing further down leaves a gap: a label landing in between gets
+      // its escalation undone until the next failing run.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
@@ -80,25 +83,28 @@ export default async function moveFailingPrToProjectBoard(req) {
         .map(name => name.trim())
         .filter(Boolean)
 
-      // The escalation rule, unchanged: with escalation configured, a card
-      // already in the escalation column, or a labelled card moved anywhere out
-      // of the chores column, is left where it is. A card with no column yet
-      // counts as still in chores, so a freshly labelled PR is still escalated
-      // below rather than skipped here.
+      // A PR with no card yet has no column. `column` treats that as the chores
+      // column (nobody has moved the PR), so a freshly labelled PR still counts
+      // as unmoved and gets escalated below rather than skipped. `alreadyEscalated`
+      // reads the raw column instead of that fallback, so a deployment where
+      // ESCALATION_COLUMN equals COLUMN_NAME doesn't mistake a card-less PR for
+      // an escalated one.
       const column = currentColumn ?? config.COLUMN_NAME
       const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
       const movedWhileLabelled =
         labelledForHuman && column !== config.COLUMN_NAME
+
+      // An escalated card stays put even without the label — removing it is how
+      // someone says they've picked the work up. An unlabelled card anywhere
+      // else comes back, so it can't be stranded where neither rule looks.
       const escalationLeaveAlone =
         escalationConfigured && (alreadyEscalated || movedWhileLabelled)
 
-      // Added on top, without touching the rule above it: an unlabelled card a
-      // person parked in a protected column (Blocked, Done, …) is left alone
-      // too. This is the case the label rule never sees. We can't read who moved
-      // a card here — GitHub only reports that on the live move event — so the
-      // column it rests in stands in for intent. Anything not caught by either
-      // rule (no card, still in chores, or dropped in an unmanaged column by
-      // board automation) goes back through the normal flow below.
+      // Protected columns (Blocked, Done, … via PROTECTED_COLUMNS) are the
+      // exception to that: an unlabelled card a person parked in one is left
+      // alone too. We can't read who moved a card here — GitHub only reports
+      // that on the live move event — so the column it rests in stands in for
+      // intent. A card in no such column still comes back through the flow below.
       const inProtectedColumn =
         Boolean(currentColumn) &&
         currentColumn !== config.COLUMN_NAME &&

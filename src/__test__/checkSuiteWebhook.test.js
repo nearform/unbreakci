@@ -92,7 +92,7 @@ const leftAloneWhenCardIs = [
   ['already in the escalation column', 'needs maintainer'],
   ['in a protected column the team parks cards in', 'blocked'],
   ['in another protected column', 'done'],
-  ['in an unmanaged column it was moved to', 'in review']
+  ['in a column that is not protected', 'todo']
 ]
 
 // Same PR without the escalation label. Removing the label is how a maintainer
@@ -380,13 +380,38 @@ describe('Check Suite Webhook tests', () => {
     expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
+  // A protected column name can contain spaces, and the list tolerates spaces
+  // around the commas. From "blocked, done, in review" a card in "in review"
+  // stays protected — the space inside the name is kept, the ones around the
+  // commas are trimmed.
+  it('leaves a PR alone in a multi-word protected column', async () => {
+    config.PROTECTED_COLUMNS = 'blocked, done, in review'
+
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('in review')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+  })
+
   // The other side of the rule: a card in a column that is neither chores, the
   // escalation column nor a protected one was not parked there by a person —
   // GitHub Projects can add a card and set its own status — so it still needs
-  // triaging and goes back to the chores column.
+  // triaging and goes back to the chores column. "todo" stands in for a default
+  // status an auto-add workflow sets, not a column the team parks cards in.
   it('returns a card in an unmanaged column to the chores column', async () => {
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      unlabelledCardIn('in review')
+      unlabelledCardIn('todo')
     )
 
     const body = JSON.stringify(defaultBody)
@@ -415,7 +440,7 @@ describe('Check Suite Webhook tests', () => {
     config.PROTECTED_COLUMNS = ''
 
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledCardIn('in review')
+      labelledCardIn('todo')
     )
 
     const body = JSON.stringify(defaultBody)
