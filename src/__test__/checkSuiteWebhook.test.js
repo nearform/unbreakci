@@ -432,15 +432,17 @@ describe('Check Suite Webhook tests', () => {
     })
   })
 
-  // The label rule protects a labelled card in any non-chores column on its
-  // own, so it still holds for a column that is in no protected list. Setting
-  // PROTECTED_COLUMNS empty here proves the protection comes from the label,
-  // not the protected set.
-  it('leaves a labelled PR alone in an unmanaged column even when none are protected', async () => {
+  // The label alone protects a labelled card in any non-chores column. "blocked"
+  // is in the PROTECTED_COLUMNS this suite configures ('blocked, done'), so
+  // emptying the list here strips its protection — the card being left alone can
+  // then only be the label rule, not a protected column. That is what makes the
+  // empty list load-bearing: drop it and the card would be left alone for the
+  // wrong reason.
+  it('leaves a labelled PR alone by its label when no columns are protected', async () => {
     config.PROTECTED_COLUMNS = ''
 
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledCardIn('todo')
+      labelledCardIn('blocked')
     )
 
     const body = JSON.stringify(defaultBody)
