@@ -72,24 +72,34 @@ export default async function moveFailingPrToProjectBoard(req) {
         config.ESCALATION_LABEL && config.ESCALATION_COLUMN
       )
 
-      // Work out whether this card is still ours to move. Reading the column now
-      // and writing further down leaves a gap: a label landing in between gets
-      // its escalation undone until the next failing run.
       const currentColumn = (pullRequest.projectItems?.nodes ?? []).find(
         item => item.project?.id === projectV2.id
       )?.fieldValueByName?.name
 
-      // No card counts as still in COLUMN_NAME — nobody has moved it. Nobody has
-      // escalated it either, which is why that check reads the real column.
-      const column = currentColumn ?? config.COLUMN_NAME
-      const alreadyEscalated = currentColumn === config.ESCALATION_COLUMN
-      const movedWhileLabelled =
-        labelledForHuman && column !== config.COLUMN_NAME
+      // Columns a human parks a card in deliberately — Blocked, Done, and the
+      // like, set per deployment in PROTECTED_COLUMNS — plus the escalation
+      // column, which a maintainer owns once a card reaches it. A card sitting
+      // in any of these was put there on purpose, so leave it.
+      //
+      // Anything else is reclaimed: a card with no column yet, one still in the
+      // chores column, or one that some automation (GitHub Projects can add a
+      // card and set its own status) dropped in an unmanaged column. Those still
+      // need triaging, so they go back through the normal flow below. We can't
+      // read who last moved a card at this point — GitHub only reports that on
+      // the live move event — so the column it rests in stands in for intent.
+      const protectedColumns = config.PROTECTED_COLUMNS.split(',')
+        .map(name => name.trim())
+        .filter(Boolean)
 
-      // An escalated card stays put even without the label — removing it is how
-      // someone says they've picked the work up. An unlabelled card anywhere else
-      // comes back, so it can't be stranded where neither rule looks.
-      if (escalationConfigured && (alreadyEscalated || movedWhileLabelled)) {
+      const leaveAloneColumns = new Set(
+        [config.ESCALATION_COLUMN, ...protectedColumns].filter(Boolean)
+      )
+
+      if (
+        currentColumn &&
+        currentColumn !== config.COLUMN_NAME &&
+        leaveAloneColumns.has(currentColumn)
+      ) {
         req.log.info(
           `PR number ${pr.number} from ${repositoryName} is already in the ${currentColumn} column. Leaving it alone.`
         )

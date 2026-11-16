@@ -21,6 +21,8 @@ jest.mock('../../config.js', () => ({
     COLUMN_NAME: 'unbreakci',
     ESCALATION_LABEL: 'requires-human',
     ESCALATION_COLUMN: 'needs maintainer',
+    // A space after the comma, to pin that the list is trimmed.
+    PROTECTED_COLUMNS: 'blocked, done',
     LOG_LEVEL: 'silent'
   }
 }))
@@ -53,7 +55,8 @@ const boardColumns = {
   options: [
     { name: 'unbreakci', id: 44 },
     { name: 'needs maintainer', id: 66 },
-    { name: 'blocked', id: 111 }
+    { name: 'blocked', id: 111 },
+    { name: 'done', id: 222 }
   ]
 }
 
@@ -84,7 +87,8 @@ const escalatedWhenCardIs = [
 
 const leftAloneWhenCardIs = [
   ['already in the escalation column', 'needs maintainer'],
-  ['in a column someone moved it to on purpose', 'blocked']
+  ['in a protected column the team parks cards in', 'blocked'],
+  ['in another protected column', 'done']
 ]
 
 // Same PR without the escalation label. Removing the label is how a maintainer
@@ -149,6 +153,7 @@ describe('Check Suite Webhook tests', () => {
     config.COLUMN_NAME = 'unbreakci'
     config.ESCALATION_LABEL = 'requires-human'
     config.ESCALATION_COLUMN = 'needs maintainer'
+    config.PROTECTED_COLUMNS = 'blocked, done'
   })
 
   it('returns if no pullRequest associated to check suite', async () => {
@@ -350,10 +355,10 @@ describe('Check Suite Webhook tests', () => {
     expect(moveCardToProjectColumn).not.toHaveBeenCalled()
   })
 
-  // An unlabelled card in some other column does go back to chores. Without
-  // this a card could sit somewhere neither rule ever touches again — GitHub
-  // itself can add a card and set its own status.
-  it('returns an unlabelled PR to the chores column from anywhere else', async () => {
+  // A card a human parked in a protected column — here "blocked" — stays there,
+  // label or no label. Dragging it back to chores on the next failing run is
+  // exactly what the failing-run rule must not do.
+  it('leaves an unlabelled PR alone when its card is in a protected column', async () => {
     getPullRequestAndProjectDetails.mockResolvedValueOnce(
       unlabelledCardIn('blocked')
     )
@@ -367,8 +372,57 @@ describe('Check Suite Webhook tests', () => {
       body
     })
 
+    expect(addPrToProject).not.toHaveBeenCalled()
+    expect(moveCardToProjectColumn).not.toHaveBeenCalled()
+  })
+
+  // The other side of the rule: a card in a column that is neither chores, the
+  // escalation column nor a protected one was not parked there by a person —
+  // GitHub Projects can add a card and set its own status — so it still needs
+  // triaging and goes back to the chores column.
+  it('returns a card in an unmanaged column to the chores column', async () => {
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      unlabelledCardIn('in review')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
     expect(moveCardToProjectColumn).toHaveBeenCalledWith({
       columnId: 44,
+      fieldId: 33,
+      installationToken: 'token',
+      itemId: 55,
+      projectId: 22
+    })
+  })
+
+  // Protecting a column must not strand a labelled card there. With no protected
+  // columns configured, a labelled card in an unmanaged column is escalated.
+  it('escalates a labelled PR in an unmanaged column when none are protected', async () => {
+    config.PROTECTED_COLUMNS = ''
+
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(
+      labelledCardIn('in review')
+    )
+
+    const body = JSON.stringify(defaultBody)
+
+    await testServer.inject({
+      method: 'POST',
+      headers: getDefaultHeaders(body),
+      url: '/',
+      body
+    })
+
+    expect(moveCardToProjectColumn).toHaveBeenCalledWith({
+      columnId: 66,
       fieldId: 33,
       installationToken: 'token',
       itemId: 55,
@@ -447,9 +501,7 @@ describe('Check Suite Webhook tests', () => {
   it('moves a PR labelled for a human if no label column is configured', async () => {
     config.ESCALATION_COLUMN = ''
 
-    getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledCardIn('needs maintainer')
-    )
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(labelledCardIn(null))
 
     const body = JSON.stringify(defaultBody)
 
@@ -472,9 +524,7 @@ describe('Check Suite Webhook tests', () => {
   it('moves a PR labelled for a human if no label name is configured', async () => {
     config.ESCALATION_LABEL = ''
 
-    getPullRequestAndProjectDetails.mockResolvedValueOnce(
-      labelledCardIn('needs maintainer')
-    )
+    getPullRequestAndProjectDetails.mockResolvedValueOnce(labelledCardIn(null))
 
     const body = JSON.stringify(defaultBody)
 
